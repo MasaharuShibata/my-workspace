@@ -172,14 +172,28 @@ sequenceDiagram
 
     User->>Login: メールアドレスを入力して送信
     Login->>Auth: signInWithOtp(email, redirectTo=/auth/callback)
-    Auth->>Mail: ログインリンク付きメールを送信
+    Auth->>Mail: ログインリンク付きメールを送信(独自テンプレート)
     Auth-->>Login: 送信結果(成功/エラー)
     User->>Mail: メールを開き、リンクをタップ
-    Mail->>Callback: /auth/callback?code=xxxx へアクセス
-    Callback->>Auth: exchangeCodeForSession(code)
+    Mail->>Callback: /auth/callback?token_hash=xxxx&type=magiclink へアクセス
+    Callback->>Auth: verifyOtp(type, token_hash)
     Auth-->>Callback: セッション発行(Cookieに保存)
-    Callback-->>User: トップページへリダイレクト(ログイン済み状態)
+    Callback-->>User: トップページへ ?login=success 付きでリダイレクト(ログイン済み状態・通知表示)
 ```
+
+#### なぜ `code`(PKCE)ではなく `token_hash` を使うか
+
+Supabaseのメールテンプレートの初期設定は `{{ .ConfirmationURL }}` という、Supabaseがホストする確認用URLを使う。
+このURLは検証後、既定では**トークンをURLのハッシュフラグメント(`#access_token=...`)として付与してリダイレクトする**。
+ハッシュフラグメントはブラウザからサーバーへ送信されない情報のため、サーバー側の `/auth/callback` では
+一切受け取れず、ログイン処理が常に失敗していた(これが実際に発生した不具合の原因)。
+
+これを避けるため、メールテンプレートを独自のリンク(`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/`)
+に書き換え、Supabaseのホスト型確認ページを経由せず、直接 `/auth/callback` へ `token_hash` を渡す方式に変更した。
+この方式は、メールを開いたブラウザが送信時のブラウザと異なっていても正しく機能する
+(PKCE方式の `code` 交換のように「送信時と同じブラウザでの実行」を前提としない)。
+
+テンプレートの具体的な編集手順は [`04_environment-setup.md`](./04_environment-setup.md) を参照。
 
 ## 4. おすすめスコアの計算仕様(`lib/score.ts`)
 
