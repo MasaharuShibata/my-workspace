@@ -6,10 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
+    setErrorMessage(null);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
@@ -19,7 +21,12 @@ export default function LoginPage() {
       },
     });
 
-    setStatus(error ? "error" : "sent");
+    if (error) {
+      setErrorMessage(error.message);
+      setStatus("error");
+    } else {
+      setStatus("sent");
+    }
   }
 
   return (
@@ -47,7 +54,9 @@ export default function LoginPage() {
               {status === "sending" ? "送信中..." : "ログインリンクを送る"}
             </button>
             {status === "error" && (
-              <p className="auth-error">送信に失敗しました。もう一度お試しください。</p>
+              <p className="auth-error">
+                送信に失敗しました。{errorMessage && `(${errorMessage})`}
+              </p>
             )}
           </form>
         )}
