@@ -1,0 +1,324 @@
+:root {
+  --color-bg: #fbf5ec;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8efe0;
+  --color-border: #ecdec4;
+  --color-text: #2c231a;
+  --color-text-muted: #7c6d59;
+  --color-accent: #cf6a2c;
+  --color-accent-strong: #a8541f;
+  --color-accent-soft: #f7e2cd;
+  --color-danger: #b3402c;
+  --color-danger-soft: #f9e2dc;
+  --shadow-sm: 0 1px 2px rgba(40, 27, 12, 0.06);
+  --shadow-md: 0 8px 24px rgba(40, 27, 12, 0.08);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-full: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-noto), "Hiragino Kaku Gothic ProN", "Yu Gothic", "Segoe UI", sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 28px;
+  background: rgba(251, 245, 236, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+
+.site-nav {
+  display: flex;
+  gap: 22px;
+  flex: 1;
+}
+
+.site-nav a {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.site-nav a:hover {
+  color: var(--color-text);
+}
+
+/* ---------- Page shell ---------- */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 72px;
+}
+
+.page-intro {
+  margin-bottom: 28px;
+}
+
+.page-intro h1 {
+  font-size: 1.9rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.page-intro p {
+  color: var(--color-text-muted);
+  margin: 0;
+  font-size: 0.94rem;
+  max-width: 520px;
+}
+
+/* ---------- Ingredient form ---------- */
+
+.ingredient-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+}
+
+.ingredient-form label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.ingredient-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ingredient-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ingredient-form input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+
+.ingredient-form button {
+  flex-shrink: 0;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ingredient-form button:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+  transform: translateY(-1px);
+}
+
+.ingredient-form button:disabled {
+  opacity: 0.5;
+  transform: none;
+}
+
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.82rem;
+  margin: 10px 0 0;
+}
+
+.panel-empty {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ---------- Recipe result / favorite card (shared look) ---------- */
+
+.recipe-result,
+.favorite-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.recipe-result h2,
+.favorite-card-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.recipe-source {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  margin: 0 0 16px;
+}
+
+.recipe-result h3,
+.favorite-card h4 {
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.recipe-ingredients,
+.recipe-steps {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 0.92rem;
+}
+
+.recipe-ingredients li,
+.recipe-steps li {
+  margin-bottom: 4px;
+}
+
+.recipe-result > button {
+  margin-top: 18px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  padding: 11px 20px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.recipe-result > button:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+  transform: translateY(-1px);
+}
+
+.recipe-result > button:disabled {
+  opacity: 0.6;
+  transform: none;
+}
+
+/* ---------- Favorite list ---------- */
+
+.favorite-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.favorite-card-header button {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-danger);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.favorite-card-header button:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.favorite-card-header button:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 560px) {
+  .ingredient-form-row {
+    flex-direction: column;
+  }
+
+  .ingredient-form button {
+    width: 100%;
+  }
+}
