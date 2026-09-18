@@ -11,7 +11,11 @@ export default function SyncButton() {
       type="button"
       className="sync-btn"
       disabled={isPending}
-      onClick={() => startTransition(() => syncShopData())}
+      onClick={() =>
+        startTransition(() => {
+          void syncShopData();
+        })
+      }
     >
       {isPending ? "更新中..." : "データを更新(Googleから評価を取得)"}
     </button>

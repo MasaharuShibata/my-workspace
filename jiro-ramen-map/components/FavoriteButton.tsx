@@ -19,7 +19,11 @@ export default function FavoriteButton({ shopId, initialFavorited, isLoggedIn }:
       type="button"
       className={`favorite-btn${initialFavorited ? " is-active" : ""}`}
       disabled={isPending}
-      onClick={() => startTransition(() => toggleFavorite(shopId, initialFavorited))}
+      onClick={() =>
+        startTransition(() => {
+          void toggleFavorite(shopId, initialFavorited);
+        })
+      }
       aria-label={initialFavorited ? "お気に入りから削除" : "お気に入りに追加"}
     >
       {initialFavorited ? "★" : "☆"}
