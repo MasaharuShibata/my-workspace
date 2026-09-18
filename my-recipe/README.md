@@ -7,6 +7,9 @@
 
 詳しい要件・設計は [`docs/00_index.md`](./docs/00_index.md) の設計書一式を参照してください。
 
+このアプリをゼロから作る手順を、Webアプリ開発が初めての人向けに解説した学習教材が
+[`tutorial/00_index.md`](./tutorial/00_index.md) にあります(設計書とは別の読み物です)。
+
 ## 構成
 
 - Next.js(App Router) + TypeScript

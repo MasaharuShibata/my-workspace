@@ -13,6 +13,12 @@
 | [03_detailed-design.md](./03_detailed-design.md) | 詳細設計書。画面・処理・テーブルの詳細仕様を定義 |
 | [04_environment-setup.md](./04_environment-setup.md) | 環境構築手順書。Supabase / Vercel / Claude APIのセットアップ手順とトラブルシューティング |
 
+### 関連ドキュメント(設計書ではないもの)
+
+| ドキュメント | 内容 |
+|---|---|
+| [../tutorial/00_index.md](../tutorial/00_index.md) | 学習教材。このアプリを題材に、Webアプリ開発が全くの初心者でもゼロから作れるよう、設計の考え方・製造手順・文法の基礎まで解説したもの |
+
 ## 現在の進捗
 
 環境構築完了・デプロイ済み。次は試験(画面の打鍵確認・試験成績書の作成)。
