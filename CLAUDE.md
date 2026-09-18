@@ -16,6 +16,15 @@
 
 上記の「ディレクトリ作成・README追加」のルールは不要。指示された変更のみを行い、ブランチ作成・コミット・push・PR作成の流れ(上記4, 5)は同様に行う。
 
+## PRマージ後の案内
+
+GitHub Pages(`https://masaharushibata.github.io/my-workspace/`)が有効なため、`index.html` を持つ静的サイトのプロジェクト(例: `portfolio`, `calculator`)に関するPRをマージしたときは、その直後に以下を案内すること。
+
+- 動作確認用URL: `https://masaharushibata.github.io/my-workspace/<ディレクトリ名>/`(末尾のスラッシュを忘れないこと)
+- GitHub Pagesの再ビルドに1〜2分ほどかかる場合がある旨
+
+サーバー側の処理を伴うプロジェクト(GitHub Pagesでは動作確認できないもの)の場合は、この案内は不要。
+
 ## その他の方針
 
 - コミットメッセージ・PR説明文は日本語で簡潔に書く
