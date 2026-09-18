@@ -1,0 +1,129 @@
+:root {
+  --color-bg: #1c1c1e;
+  --color-display-expr: #8e8e93;
+  --color-display-value: #f5f5f7;
+  --color-key-num: #3a3a3c;
+  --color-key-num-active: #4a4a4c;
+  --color-key-func: #a5a5aa;
+  --color-key-func-text: #1c1c1e;
+  --color-key-op: #ff9f0a;
+  --color-key-op-active: #ffb340;
+  --color-key-op-text: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  padding: 16px;
+}
+
+.calculator {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.display {
+  padding: 24px 12px 8px;
+  text-align: right;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.display-expression {
+  font-size: 1rem;
+  color: var(--color-display-expr);
+  min-height: 1.4em;
+  word-break: break-all;
+}
+
+.display-value {
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--color-display-value);
+  line-height: 1.1;
+  word-break: break-all;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.key {
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-key-num);
+  color: var(--color-display-value);
+  font-size: 1.6rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.1s ease;
+}
+
+.key:active {
+  background: var(--color-key-num-active);
+  transform: scale(0.96);
+}
+
+.key-func {
+  background: var(--color-key-func);
+  color: var(--color-key-func-text);
+}
+
+.key-func:active {
+  background: #bdbdc2;
+}
+
+.key-op {
+  background: var(--color-key-op);
+  color: var(--color-key-op-text);
+  font-weight: 500;
+}
+
+.key-op:active,
+.key-op.is-active {
+  background: var(--color-key-op-active);
+}
+
+.key-equals {
+  background: var(--color-key-op);
+  color: var(--color-key-op-text);
+}
+
+.key-equals:active {
+  background: var(--color-key-op-active);
+}
+
+.key-wide {
+  grid-column: span 2;
+  aspect-ratio: auto;
+  border-radius: 999px;
+  text-align: left;
+  padding-left: 28px;
+}
+
+@media (max-width: 360px) {
+  .display-value {
+    font-size: 2.4rem;
+  }
+
+  .key {
+    font-size: 1.3rem;
+  }
+}
