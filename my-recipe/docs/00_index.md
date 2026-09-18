@@ -15,9 +15,11 @@
 
 ## 現在の進捗
 
-製造(実装)完了。試験(画面の動作確認)はこれから実施する。
-実際に動かすには、環境構築手順書([04_environment-setup.md](./04_environment-setup.md))に沿って
-Supabase / Anthropic / Vercelのセットアップが必要。
+環境構築完了・デプロイ済み。次は試験(画面の打鍵確認・試験成績書の作成)。
+
+- デプロイ先URL: https://my-recipe-gold-ten.vercel.app/
+- Supabase・Vercel・Anthropicのセットアップは [04_environment-setup.md](./04_environment-setup.md) の手順で実施済み
+- レシピ生成API・お気に入り機能とも、デプロイ後に実際の動作を確認済み
 
 ## 開発の背景
 
