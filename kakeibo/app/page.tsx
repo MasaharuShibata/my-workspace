@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Header from "@/components/Header";
 import MonthNav from "@/components/MonthNav";
 import SummaryCards from "@/components/SummaryCards";
@@ -10,6 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentMonth, monthToDateRange } from "@/lib/format";
 import type { Category, CategorySummary, TransactionWithCategory, ActivityLogEntry } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -18,33 +19,7 @@ export default async function HomePage({
   const { month: monthParam } = await searchParams;
   const month = monthParam ?? getCurrentMonth();
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return (
-      <>
-        <Header />
-        <main className="page">
-          <div className="page-intro">
-            <h1>家計簿</h1>
-            <p>
-              収入・支出を記録して、月ごとの収支とカテゴリ別の内訳をひと目で確認できる家計簿アプリです。
-              記録するたびにデータベースがどう動いているかも見られます。
-            </p>
-          </div>
-          <p>
-            <Link href="/login" className="link-btn">
-              ログインして始める
-            </Link>
-          </p>
-        </main>
-      </>
-    );
-  }
-
+  const supabase = createClient();
   const { start, end } = monthToDateRange(month);
 
   const [{ data: categories }, { data: transactions }, { data: summary }, { data: activity }] =

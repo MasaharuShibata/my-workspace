@@ -1,30 +1,10 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-type CookieToSet = { name: string; value: string; options: CookieOptions };
-
-export async function createClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
+// ログイン機能を廃止したため、cookieベースのセッション管理は不要。
+// anonキーで直接Supabaseにアクセスするだけのシンプルなクライアント。
+export function createClient() {
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet: CookieToSet[]) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Server Componentから呼ばれた場合はcookieを書き換えられないため無視する。
-            // ミドルウェアでセッションを更新している構成であれば問題ない。
-          }
-        },
-      },
-    }
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }

@@ -4,12 +4,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { CategoryType } from "@/lib/types";
 
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  revalidatePath("/");
-}
-
 function parseAmount(value: FormDataEntryValue | null): number | null {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return null;
@@ -31,14 +25,8 @@ export async function addTransaction(formData: FormData) {
     return { error: "入力内容を確認してください。" };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "ログインが必要です。" };
-
+  const supabase = createClient();
   const { error } = await supabase.from("transactions").insert({
-    user_id: user.id,
     category_id: categoryId,
     type,
     amount,
@@ -63,12 +51,7 @@ export async function updateTransaction(id: string, formData: FormData) {
     return { error: "入力内容を確認してください。" };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "ログインが必要です。" };
-
+  const supabase = createClient();
   const { error } = await supabase
     .from("transactions")
     .update({
@@ -78,8 +61,7 @@ export async function updateTransaction(id: string, formData: FormData) {
       occurred_on: occurredOn,
       memo,
     })
-    .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("id", id);
 
   if (error) return { error: "更新に失敗しました。時間をおいて再度お試しください。" };
 
@@ -88,17 +70,8 @@ export async function updateTransaction(id: string, formData: FormData) {
 }
 
 export async function deleteTransaction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "ログインが必要です。" };
-
-  const { error } = await supabase
-    .from("transactions")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+  const supabase = createClient();
+  const { error } = await supabase.from("transactions").delete().eq("id", id);
 
   if (error) return { error: "削除に失敗しました。時間をおいて再度お試しください。" };
 
@@ -114,12 +87,7 @@ export async function addCategory(formData: FormData) {
     return { error: "カテゴリ名と種別を入力してください。" };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "ログインが必要です。" };
-
+  const supabase = createClient();
   const { error } = await supabase.from("categories").insert({ name, type });
 
   if (error) return { error: "追加に失敗しました。同じ名前のカテゴリが既にあるかもしれません。" };
