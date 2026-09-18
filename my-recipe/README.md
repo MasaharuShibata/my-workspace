@@ -3,13 +3,65 @@
 食材をいくつか入力すると、AI(Claude API)がそれらを活かしたレシピを考案してくれるレシピ提案Webアプリです。
 気に入ったレシピはお気に入りとして保存できます。
 
-個人利用(自分だけが使う)を前提にしています。
+ログイン機能は無く、個人利用(自分だけが使う)を前提にしています。
 
-現在は要件定義中です。詳しい要件・設計は [`docs/00_index.md`](./docs/00_index.md) を参照してください。
+詳しい要件・設計は [`docs/00_index.md`](./docs/00_index.md) の設計書一式を参照してください。
 
-## 構成(予定)
+## 構成
 
 - Next.js(App Router) + TypeScript
-- Supabase(お気に入りレシピの保存)
-- Claude API(Anthropic) によるレシピ考案
+- Supabase(お気に入りレシピの保存。認証機能は使用しません)
+- Claude API(Anthropic、`claude-haiku-4-5`)によるレシピ考案
 - Vercel でホスティング
+
+## 機能
+
+- 食材を複数入力して、AIにレシピ(料理名・材料・作り方)を考案してもらう
+- 気に入ったレシピをお気に入りに登録
+- お気に入り一覧の表示・削除
+
+## セキュリティに関する注意
+
+ログイン機能が無いため、Row Level Security(RLS)は「誰でも(anonキーで)読み書きできる」ポリシーになっています。つまり、**デプロイ後のURLとSupabaseのanonキーを知っている人は誰でもお気に入りを閲覧・削除できます**。
+
+個人利用でも見られたくない場合は、Vercelの「Deployment Protection」でサイト全体にパスワードを掛けることをおすすめします(Project Settings → Deployment Protection → Password Protection)。
+
+## コストに関する注意
+
+Vercel・Supabaseは無料プランで運用できますが、レシピ考案に使うClaude APIは**従量課金制**です。
+1回のレシピ考案あたり1円未満が目安ですが、無料枠には頼らない前提のため、Anthropicコンソールで
+利用上限(予算アラート)を設定しておくことをおすすめします(詳細は環境構築手順書参照)。
+
+## 必要な準備
+
+詳しい手順は [`docs/04_environment-setup.md`](./docs/04_environment-setup.md) を参照してください。概要は以下の通りです。
+
+### 1. Supabase
+
+1. プロジェクトの「SQL Editor」で `supabase/schema.sql` の内容を実行(`favorite_recipes`テーブル・RLSポリシーの作成)
+2. Project Settings → API から取得できる値を、Vercelの環境変数に設定
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`(Publishable key)
+
+### 2. Anthropic(Claude API)
+
+1. https://console.anthropic.com でAPIキーを作成し、支払い方法を登録
+2. 取得したAPIキーを、Vercelの環境変数 `ANTHROPIC_API_KEY` に設定
+   (`NEXT_PUBLIC_`は付けないこと。ブラウザに公開されない専用のサーバー環境変数として扱う)
+
+### 3. Vercel
+
+- 「Root Directory」を `my-recipe` に設定してデプロイしてください
+- 上記の環境変数(3つ)を登録してからデプロイすると、初回から正しく動作します
+
+## デプロイ後の初回操作
+
+1. 食材入力欄に「鶏むね肉, 白菜」のように複数の食材を入力し、「レシピを考えてもらう」を押す
+2. 表示されたレシピが気に入ったら「お気に入り登録」を押す
+3. ヘッダーの「お気に入り」から登録した内容を確認できる
+
+## 今後の拡張候補
+
+- ログイン機能(個人1人での利用に限定しているため、現状は意図的に持たない)
+- お気に入りレシピの手動編集
+- カロリー・栄養素の計算

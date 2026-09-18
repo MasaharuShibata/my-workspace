@@ -11,11 +11,13 @@
 | [01_requirements.md](./01_requirements.md) | 要件定義書。何のために・誰のために・何を作るかを定義 |
 | [02_basic-design.md](./02_basic-design.md) | 基本設計書。システム構成・画面・データベースの全体像を定義 |
 | [03_detailed-design.md](./03_detailed-design.md) | 詳細設計書。画面・処理・テーブルの詳細仕様を定義 |
-| 04_environment-setup.md | 環境構築手順書。Supabase / Vercel / Claude APIのセットアップ手順とトラブルシューティング(製造時に作成) |
+| [04_environment-setup.md](./04_environment-setup.md) | 環境構築手順書。Supabase / Vercel / Claude APIのセットアップ手順とトラブルシューティング |
 
 ## 現在の進捗
 
-詳細設計中(`03_detailed-design.md`がドラフト)。この後、製造(実装)・試験へ進む。
+製造(実装)完了。試験(画面の動作確認)はこれから実施する。
+実際に動かすには、環境構築手順書([04_environment-setup.md](./04_environment-setup.md))に沿って
+Supabase / Anthropic / Vercelのセットアップが必要。
 
 ## 開発の背景
 
