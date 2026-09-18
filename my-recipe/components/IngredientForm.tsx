@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { Recipe } from "@/lib/types";
+import { GENRES, type Genre } from "@/lib/types";
 
 const MAX_INGREDIENTS = 10;
 
@@ -13,15 +13,17 @@ function parseIngredients(input: string): string[] {
 }
 
 export default function IngredientForm({
-  onGenerated,
+  generating,
+  onSubmit,
 }: {
-  onGenerated: (recipe: Recipe, sourceIngredients: string) => void;
+  generating: boolean;
+  onSubmit: (ingredients: string[], genre: Genre) => void;
 }) {
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [genre, setGenre] = useState<Genre>("こだわりなし");
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const ingredients = parseIngredients(input);
 
@@ -34,28 +36,8 @@ export default function IngredientForm({
       return;
     }
 
-    setLoading(true);
     setError(null);
-
-    try {
-      const res = await fetch("/api/generate-recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ingredients }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? "レシピの考案に失敗しました。もう一度お試しください。");
-        return;
-      }
-
-      onGenerated(data.recipe as Recipe, ingredients.join("、"));
-    } catch {
-      setError("レシピの考案に失敗しました。もう一度お試しください。");
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(ingredients, genre);
   }
 
   return (
@@ -68,10 +50,23 @@ export default function IngredientForm({
           placeholder="例: 鶏むね肉, 白菜, しょうが"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
+          disabled={generating}
         />
-        <button type="submit" disabled={loading}>
-          {loading ? "考案中..." : "レシピを考えてもらう"}
+        <select
+          id="genre"
+          value={genre}
+          onChange={(e) => setGenre(e.target.value as Genre)}
+          disabled={generating}
+          aria-label="ジャンル"
+        >
+          {GENRES.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+        <button type="submit" disabled={generating}>
+          {generating ? "考案中..." : "レシピを考えてもらう"}
         </button>
       </div>
       {error && <p className="form-error">{error}</p>}

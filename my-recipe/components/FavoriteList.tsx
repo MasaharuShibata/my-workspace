@@ -1,9 +1,19 @@
 import FavoriteCard from "@/components/FavoriteCard";
 import type { FavoriteRecipe } from "@/lib/types";
 
-export default function FavoriteList({ favorites }: { favorites: FavoriteRecipe[] }) {
+export default function FavoriteList({
+  favorites,
+  filtered = false,
+}: {
+  favorites: FavoriteRecipe[];
+  filtered?: boolean;
+}) {
   if (favorites.length === 0) {
-    return <p className="panel-empty">まだお気に入りがありません。</p>;
+    return (
+      <p className="panel-empty">
+        {filtered ? "このジャンルのお気に入りはありません。" : "まだお気に入りがありません。"}
+      </p>
+    );
   }
 
   return (

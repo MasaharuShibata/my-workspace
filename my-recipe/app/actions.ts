@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Recipe } from "@/lib/types";
+import type { Genre, Recipe } from "@/lib/types";
 
-export async function addFavorite(recipe: Recipe, sourceIngredients: string) {
+export async function addFavorite(recipe: Recipe, sourceIngredients: string, genre: Genre) {
   const supabase = createClient();
   const { error } = await supabase.from("favorite_recipes").insert({
     title: recipe.title,
+    genre,
+    cooking_time: recipe.cookingTime,
+    servings: recipe.servings,
     source_ingredients: sourceIngredients,
     ingredients: recipe.ingredients.join("\n"),
     steps: recipe.steps.join("\n"),

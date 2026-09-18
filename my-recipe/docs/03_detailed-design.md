@@ -16,10 +16,11 @@ my-recipe/
 │   └── api/generate-recipe/route.ts   # Route Handler。Claude APIへのレシピ生成依頼(POST)
 ├── components/
 │   ├── Header.tsx                     # 共通ヘッダー(ナビゲーションのみ)
-│   ├── IngredientForm.tsx             # 食材入力フォーム+「レシピを考えてもらう」ボタン
-│   ├── RecipeResult.tsx               # 生成結果の表示+「お気に入り登録」ボタン
+│   ├── IngredientForm.tsx             # 食材入力+ジャンル選択+「レシピを考えてもらう」ボタン
+│   ├── RecipeResult.tsx               # 生成結果の表示(チェックボックス付き材料)+登録/再提案ボタン
 │   ├── FavoriteList.tsx               # お気に入り一覧(FavoriteCardの親)
-│   └── FavoriteCard.tsx               # お気に入り1件分のカードUI+削除ボタン
+│   ├── FavoriteCard.tsx               # お気に入り1件分の折りたたみカードUI+削除ボタン
+│   └── GenreFilter.tsx                # お気に入り一覧のジャンル絞り込みリンク
 ├── lib/
 │   ├── types.ts                       # 型定義(Recipe / FavoriteRecipe)
 │   ├── claude.ts                      # Claude API呼び出し・プロンプト生成
@@ -44,10 +45,14 @@ my-recipe/
   (入力・ボタン操作・生成結果の表示をその場で切り替えるため、サーバーコンポーネントでは実現しづらい)
 - **表示内容**: ヘッダー(`Header.tsx`)、食材入力フォーム(`IngredientForm.tsx`)、
   生成結果表示エリア(`RecipeResult.tsx`。未生成時は非表示)
-- **状態管理**(`useState`): 入力中の食材文字列、生成中フラグ(ローディング表示用)、
-  生成結果(`Recipe | null`)、エラーメッセージ(`string | null`)
+- **状態管理**(`useState`、`app/page.tsx`側で一元管理): 直前に生成した`Recipe | null`、
+  リクエストに使った食材配列・ジャンル、生成中フラグ、エラーメッセージ
+  - `IngredientForm.tsx`は入力中の食材文字列・選択中のジャンル・入力バリデーションエラーのみを
+    ローカルで管理し、送信時に`onSubmit(ingredients, genre)`を呼ぶだけの構成にする
+  - こうすることで、`RecipeResult.tsx`の「別のレシピを提案してもらう」ボタンからも、
+    `IngredientForm.tsx`を経由せず同じ生成処理(`app/page.tsx`の`generate`関数)を呼び出せる
 
-#### 2.1.1 食材入力の仕様
+#### 2.1.1 食材入力・ジャンル選択の仕様
 
 - カンマ(`,`)または全角読点(`、`)区切りで複数の食材を1つのテキストボックスに入力する
 - 送信前に以下のバリデーションを行う
@@ -55,15 +60,26 @@ my-recipe/
   - トリム後、1つも食材が残らない場合は送信不可(「食材を1つ以上入力してください」を表示)
   - 食材数は**最大10個**までとする(超えた場合は「食材は10個までにしてください」を表示し、
     Claude APIへのリクエストを抑えてコストを一定範囲に保つ)
+- ジャンルは`<select>`による選択式。選択肢は`lib/types.ts`の`GENRES`定数
+  (`和食` / `洋食` / `中華` / `イタリアン` / `韓国料理` / `お弁当` / `こだわりなし`)で固定する。
+  初期値は「こだわりなし」
 
 ### 2.2 S2: お気に入り一覧画面(`app/favorites/page.tsx`)
 
 - **アクセス制御**: なし
-- サーバーコンポーネントとして実装し、`favorite_recipes` テーブルを`created_at`降順で全件取得して表示する
+- サーバーコンポーネントとして実装し、URLの`?genre=`クエリパラメータを読み取って
+  `favorite_recipes`テーブルを絞り込み(`genre`が指定されていれば`.eq("genre", genre)`)、
+  `created_at`降順で取得して表示する
 - `export const dynamic = "force-dynamic"` を指定する
   (kakeiboと同様、認証を使わない構成ではNext.jsが静的ページ化を試みてビルド時エラーになるため)
-- 保存件数が0件の場合は「まだお気に入りがありません」と表示する
-- 各カード(`FavoriteCard.tsx`)に削除ボタンを表示する
+- 上部にジャンル絞り込みリンク(`GenreFilter.tsx`)を表示する。「すべて」+ジャンルごとのリンクで、
+  クリックすると`?genre=`付きのURLに遷移する(クライアント状態を持たないシンプルな実装)
+- 保存件数が0件の場合は「まだお気に入りがありません」、絞り込みで0件の場合は
+  「このジャンルのお気に入りはありません」と表示する
+- 各カード(`FavoriteCard.tsx`)は**折りたたみ式**。通常はタイトル・ジャンルのみ表示し、
+  タイトル部分をクリックすると詳細(調理時間・人数・使った食材・材料・作り方)が展開される
+  (`useState`で開閉状態をカードごとに保持。ページ再読み込みで閉じた状態に戻る)
+- 「削除」ボタンは折りたたみ状態に関わらず常に表示する
 
 ## 3. Claude API呼び出し仕様(`lib/claude.ts`)
 
@@ -81,20 +97,33 @@ my-recipe/
 - **システムプロンプト**(概要): 「あなたは家庭料理のレシピを考案する料理アシスタントです。
   与えられた食材を活かした、家庭で作りやすい料理のレシピを1つ考案してください。
   塩・こしょう・醤油・油などの基本的な調味料は、リストに無くても使って構いません。
-  出力は指定されたJSON形式のみとし、それ以外の説明文は含めないでください。」
-- **ユーザーメッセージ**: `次の食材を使ったレシピを考えてください: ${食材をカンマ区切りで連結した文字列}`
+  調理時間(目安)と人数(何人分)も必ず出力してください。
+  出力は指定された形式のみとし、それ以外の説明文は含めないでください。」
+- **ユーザーメッセージ**: 以下を連結して組み立てる(ジャンルが「こだわりなし」の場合、
+  ジャンル指定文は付けない。`avoidTitle`は「別のレシピを提案してもらう」時のみ付与)
+
+  ```
+  (ジャンルは「${genre}」の料理にしてください。)
+  (直前に提案した「${avoidTitle}」とは別の料理を考えてください。)
+  次の食材を使ったレシピを考えてください: ${食材をカンマ区切りで連結した文字列}
+  ```
+
 - **出力形式**: Anthropic TypeScript SDKの構造化出力機能(`output_config.format`によるJSON Schema指定)を用いて、
   以下の形式のJSONを確実に取得する
 
 ```json
 {
   "title": "レシピ名(例: 鶏むね肉と白菜の生姜炒め)",
+  "cookingTime": "調理時間の目安(例: 20分)",
+  "servings": "何人分か(例: 2人分)",
   "ingredients": ["鶏むね肉 200g", "白菜 1/4個", "生姜 1片", "..."],
   "steps": ["鶏むね肉を一口大に切る", "白菜をざく切りにする", "..."]
 }
 ```
 
 - `ingredients`・`steps`はそれぞれ文字列の配列とする(1要素が1材料・1手順に対応)
+- **ジャンルは利用者が選択した値をそのまま使う**(AIの出力には含めない)。`genre`はRoute Handlerが
+  受け取った値をそのまま画面表示・お気に入り保存に使う
 - 具体的なSDK呼び出しコード(`output_config.format`のスキーマ定義や`max_tokens`の値など)は、
   製造時にAnthropic公式SDKドキュメントの最新仕様を確認した上で実装する
 
@@ -117,11 +146,11 @@ sequenceDiagram
     participant Route as /api/generate-recipe(Route Handler)
     participant Claude as Claude API(claude-haiku-4-5)
 
-    User->>Form: 食材を入力して「レシピを考えてもらう」を押す
+    User->>Form: 食材・ジャンルを入力して「レシピを考えてもらう」を押す
     Form->>Form: 入力値のバリデーション(1〜10個)
-    Form->>Route: POST { ingredients: string[] }
+    Form->>Route: POST { ingredients: string[], genre, avoidTitle? }
     Route->>Claude: レシピ考案を依頼(構造化出力でJSON形式を指定)
-    Claude-->>Route: レシピ(title / ingredients / steps)のJSON
+    Claude-->>Route: レシピ(title / cookingTime / servings / ingredients / steps)のJSON
     Route->>Route: 形式チェック(パース失敗時は500エラー)
     Route-->>Form: 200 OK + レシピJSON
     Form->>Form: RecipeResultにレシピを表示、お気に入り登録ボタンを表示
@@ -133,11 +162,12 @@ Next.jsの Server Actions(`"use server"`)として実装する。
 
 | 関数 | 呼び出し元 | 処理概要 |
 |---|---|---|
-| `addFavorite(recipe, sourceIngredients)` | `RecipeResult.tsx`(お気に入り登録ボタン) | `favorite_recipes` テーブルに1件INSERT |
+| `addFavorite(recipe, sourceIngredients, genre)` | `RecipeResult.tsx`(お気に入り登録ボタン) | `favorite_recipes` テーブルに1件INSERT |
 | `deleteFavorite(id)` | `FavoriteCard.tsx`(削除ボタン) | 該当行をDELETE |
 
-- `addFavorite`は、生成された`Recipe`(`title` / `ingredients` / `steps`)と、
-  検索時に入力していた食材の文字列(`sourceIngredients`)を受け取り、`favorite_recipes`に1行追加する
+- `addFavorite`は、生成された`Recipe`(`title` / `cookingTime` / `servings` / `ingredients` / `steps`)、
+  検索時に入力していた食材の文字列(`sourceIngredients`)、選択していたジャンル(`genre`)を受け取り、
+  `favorite_recipes`に1行追加する
 - `ingredients`・`steps`(いずれも配列)は、DBには**改行区切りの1つのテキスト**として保存する
   (jsonb型を使わず、kakeiboと同様シンプルなtext型で統一する。表示側で改行ごとに分割してリスト表示する)
 - ログイン機能が無いため、これらの関数はいずれも「誰が呼んだか」を確認しない。アクセス制御は
@@ -152,6 +182,9 @@ Next.jsの Server Actions(`"use server"`)として実装する。
 |---|---|---|---|---|
 | `id` | `uuid` | NOT NULL | `gen_random_uuid()` | 主キー |
 | `title` | `text` | NOT NULL | - | レシピ名 |
+| `genre` | `text` | NOT NULL | `'こだわりなし'` | 生成時に選択したジャンル。一覧の絞り込み(F11)に使用 |
+| `cooking_time` | `text` | NOT NULL | `''` | 調理時間の目安(例: 20分) |
+| `servings` | `text` | NOT NULL | `''` | 何人分か(例: 2人分) |
 | `source_ingredients` | `text` | NOT NULL | - | 検索時に入力した食材(カンマ区切りの文字列) |
 | `ingredients` | `text` | NOT NULL | - | 材料(1行1材料、改行区切り) |
 | `steps` | `text` | NOT NULL | - | 作り方(1行1手順、改行区切り) |
@@ -200,3 +233,10 @@ UPDATEのポリシーは作成しない(お気に入りの編集機能を持た�
   毎回変わりうる(要件定義書 2.1 のスコープ外事項のとおり、この挙動は仕様として許容する)
 - **お気に入りの編集機能は無い**(登録・削除のみ)。内容を直したい場合は、現状はSupabaseの
   「Table Editor」から直接編集する必要がある
+- **材料のチェックボックスの状態は保存されない**。画面を再読み込みするとすべて未チェックの状態に戻る
+  (5.3参照。買い物・調理中の一時的な用途のため)
+- 本バージョンで`favorite_recipes`に`genre` / `cooking_time` / `servings`列を追加した際は、
+  既にデプロイ済みの環境に対して`alter table ... add column if not exists ...`形式のマイグレーションを
+  個別に適用した(`supabase/schema.sql`の`create table if not exists`だけでは既存テーブルに
+  新しい列は追加されないため)。今後列を追加する場合も同様に、`schema.sql`の更新に加えて
+  既存環境への`ALTER TABLE`適用が必要になる
