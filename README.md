@@ -6,3 +6,4 @@
 - `sample-project` : 動作確認用のサンプルディレクトリ。テスト用のテキストファイルを配置。
 - `portfolio` : 転職活動用の職務経歴書 / ポートフォリオサイトのテンプレート。
 - `calculator` : シンプルな電卓Webアプリ。
+- `jiro-ramen-map` : 二郎系ラーメン店のおすすめマップアプリ(Next.js + Supabase + Google Maps、ログイン・お気に入り機能つき)。
