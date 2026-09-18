@@ -10,6 +10,9 @@
 create table if not exists favorite_recipes (
   id uuid primary key default gen_random_uuid(),
   title text not null,
+  genre text not null default 'こだわりなし',
+  cooking_time text not null default '',
+  servings text not null default '',
   source_ingredients text not null,
   ingredients text not null,
   steps text not null,
