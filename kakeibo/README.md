@@ -5,6 +5,8 @@
 
 ログイン機能は無く、個人利用(自分だけが使う)を前提にしています。
 
+詳しい要件・設計・環境構築手順は [`docs/00_index.md`](./docs/00_index.md) の設計書一式を参照してください。
+
 ## 構成
 
 - Next.js(App Router) + TypeScript
