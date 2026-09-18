@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import MapExplorer from "@/components/MapExplorer";
 import SyncButton from "@/components/SyncButton";
-import LoginToast from "@/components/LoginToast";
 import type { Shop } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -31,7 +30,6 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <LoginToast />
       <main className="page">
         <div className="page-intro">
           <h1>二郎系ラーメンマップ</h1>
