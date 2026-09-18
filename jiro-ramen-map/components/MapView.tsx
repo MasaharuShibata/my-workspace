@@ -17,8 +17,11 @@ export default function MapView({ shops, selectedShopId, onSelectShop }: Props) 
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+
+  const SELECTED_ZOOM = 16;
 
   useEffect(() => {
     if (!apiKey) {
@@ -37,6 +40,7 @@ export default function MapView({ shops, selectedShopId, onSelectShop }: Props) 
           center: JAPAN_CENTER,
           zoom: 6,
         });
+        infoWindowRef.current = new google.maps.InfoWindow();
         setIsMapReady(true);
       })
       .catch(() => setLoadError("地図の読み込みに失敗しました。"));
@@ -71,12 +75,40 @@ export default function MapView({ shops, selectedShopId, onSelectShop }: Props) 
 
   useEffect(() => {
     const map = mapRef.current;
-    const marker = selectedShopId ? markersRef.current.get(selectedShopId) : null;
+    const infoWindow = infoWindowRef.current;
+    if (!map || !selectedShopId) return;
+
+    const marker = markersRef.current.get(selectedShopId);
     const position = marker?.getPosition();
-    if (map && position) {
-      map.panTo(position);
+    if (!marker || !position) return;
+
+    map.panTo(position);
+    if ((map.getZoom() ?? 0) < SELECTED_ZOOM) {
+      map.setZoom(SELECTED_ZOOM);
     }
-  }, [selectedShopId]);
+
+    const shop = shops.find((s) => s.id === selectedShopId);
+    if (infoWindow && shop) {
+      const ratingText =
+        shop.rating !== null ? `★ ${shop.rating.toFixed(1)}(${shop.review_count ?? 0}件)` : "評価未取得";
+
+      // 店名は利用者が入力した文字列のため、innerHTMLではなくtextContentで
+      // DOM要素を組み立てて安全に表示する(HTML/スクリプトとして解釈されないようにする)。
+      const content = document.createElement("div");
+      const nameEl = document.createElement("div");
+      nameEl.style.fontWeight = "700";
+      nameEl.style.marginBottom = "2px";
+      nameEl.textContent = shop.name;
+      const ratingEl = document.createElement("div");
+      ratingEl.style.fontSize = "0.85em";
+      ratingEl.style.color = "#82796c";
+      ratingEl.textContent = ratingText;
+      content.append(nameEl, ratingEl);
+
+      infoWindow.setContent(content);
+      infoWindow.open({ map, anchor: marker });
+    }
+  }, [selectedShopId, shops]);
 
   if (loadError) {
     return <div className="map-fallback">{loadError}</div>;

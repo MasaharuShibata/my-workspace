@@ -19,7 +19,14 @@
 2. 続けて `supabase/seed.sql` の内容を実行(初期の店舗リストを登録)
    - ここで登録される評価・口コミ数・地図上の位置は空です。アプリにログイン後、「データを更新」ボタンを押すとGoogleから取得されます
 3. 「Authentication → Providers → Email」で **Confirm email** をオフにしておくと、マジックリンクでのログインがスムーズです(初期設定のままでも動作しますが、確認メールが増えます)
-4. Project Settings → API から取得できる値を、Vercelの環境変数に設定
+4. **【必須】**「Authentication → Email Templates → Magic Link」を開き、本文中の
+   `<a href="{{ .ConfirmationURL }}">` の部分を、以下のリンクに書き換えて保存する
+   ```
+   <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/">Log In</a>
+   ```
+   (初期設定のままだと、メール内のリンクをタップしてもログイン状態にならない不具合が発生します。理由は
+   [`docs/03_detailed-design.md`](./docs/03_detailed-design.md) の「ログインの処理シーケンス」を参照)
+5. Project Settings → API から取得できる値を、Vercelの環境変数に設定
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`(Publishable key)
    - `SUPABASE_SERVICE_ROLE_KEY`(Secret key。**絶対に公開しないこと**)
