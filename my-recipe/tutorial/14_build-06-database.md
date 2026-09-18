@@ -566,6 +566,10 @@ git commit -m "Supabaseへのお気に入り登録機能を実装"
 - Server Actions は、サーバーの関数を普通に呼ぶだけで使える
 - **エラー処理は、わざと失敗させて確認する**
 
+💡 **Supabaseそのものをもっと知りたい人へ**
+「キーの種類」「RLSの `using` と `with check` の違い」「ダッシュボードの各画面」
+「無料プランの制約」は [24_supabase.md](./24_supabase.md) にまとめてあります。
+
 保存できたので、次は読み出しです。
 
 → [15_build-07-favorites.md](./15_build-07-favorites.md)
