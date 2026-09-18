@@ -1,21 +1,15 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-function LoginForm() {
-  const searchParams = useSearchParams();
-  const hasAuthError = searchParams.get("error") === "auth";
-
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
-    setErrorMessage(null);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
@@ -25,12 +19,7 @@ function LoginForm() {
       },
     });
 
-    if (error) {
-      setErrorMessage(error.message);
-      setStatus("error");
-    } else {
-      setStatus("sent");
-    }
+    setStatus(error ? "error" : "sent");
   }
 
   return (
@@ -40,12 +29,6 @@ function LoginForm() {
         <p className="auth-desc">
           メールアドレス宛に届くリンクをタップするだけでログインできます(パスワード不要)。
         </p>
-
-        {hasAuthError && status !== "sent" && (
-          <p className="auth-error auth-error-banner">
-            ログインリンクが無効か、有効期限が切れています。もう一度メールを送信してください。
-          </p>
-        )}
 
         {status === "sent" ? (
           <p className="auth-sent">
@@ -64,21 +47,11 @@ function LoginForm() {
               {status === "sending" ? "送信中..." : "ログインリンクを送る"}
             </button>
             {status === "error" && (
-              <p className="auth-error">
-                送信に失敗しました。{errorMessage && `(${errorMessage})`}
-              </p>
+              <p className="auth-error">送信に失敗しました。もう一度お試しください。</p>
             )}
           </form>
         )}
       </div>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<main className="auth-page" />}>
-      <LoginForm />
-    </Suspense>
   );
 }

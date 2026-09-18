@@ -20,11 +20,8 @@ export default async function Header() {
       </nav>
       <div className="site-auth">
         {user ? (
-          <form action={signOut} className="auth-status">
-            <span className="auth-status-badge">
-              <span className="auth-status-dot" />
-              {user.email}
-            </span>
+          <form action={signOut}>
+            <span className="auth-email">{user.email}</span>
             <button type="submit" className="link-btn">
               ログアウト
             </button>
