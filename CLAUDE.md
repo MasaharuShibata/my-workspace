@@ -25,6 +25,10 @@ GitHub Pages(`https://masaharushibata.github.io/my-workspace/`)が有効なた�
 
 サーバー側の処理を伴うプロジェクト(GitHub Pagesでは動作確認できないもの)の場合は、この案内は不要。
 
+## PRマージ後のブランチ削除
+
+PRをマージしたら、そのPRの作業用ブランチ(head branch)を削除すること。マージ後のブランチはリポジトリに残さない運用とする。
+
 ## その他の方針
 
 - コミットメッセージ・PR説明文は日本語で簡潔に書く
