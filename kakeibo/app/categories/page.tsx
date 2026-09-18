@@ -1,19 +1,12 @@
-import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import CategoryForm from "@/components/CategoryForm";
 import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
+  const supabase = createClient();
   const { data: categories } = await supabase
     .from("categories")
     .select("*")

@@ -9,7 +9,6 @@ export type Category = {
 
 export type Transaction = {
   id: string;
-  user_id: string;
   category_id: string;
   type: CategoryType;
   amount: number;
