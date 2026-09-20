@@ -42,6 +42,34 @@ Chromium は次の順で探します。見つからない場合は `CHROME_PATH`
 
 Noto Sans JP と Roboto Mono は、初回実行時に `.fonts/` へ自動で取得します。
 
+### プロキシ環境での音声合成
+
+プロキシ経由の環境では、`edge-tts` が `certifi` のバンドルしか見ないため、
+そのままだと `CERTIFICATE_VERIFY_FAILED` で止まります。足りない証明書を追記してください。
+
+```
+python3 - <<'EOF'
+import certifi
+ca = certifi.where()
+cur = open(ca).read()
+extra = open('/root/.ccr/ca-bundle.crt').read()
+blocks = ["-----BEGIN CERTIFICATE-----" + b
+          for b in extra.split("-----BEGIN CERTIFICATE-----")[1:]]
+added = 0
+with open(ca, "a") as f:
+    for b in blocks:
+        if b.strip() not in cur:
+            f.write("\n" + b.strip() + "\n")
+            added += 1
+print("追加した証明書:", added)
+EOF
+```
+
+⚠️ 「もう入っているか」を、ファイルの先頭や一部の文字列で判定しないこと。
+`/root/.ccr/ca-bundle.crt` は **システムのルート証明書一式＋プロキシのCA** という
+構成なので、先頭の証明書は `certifi` にも入っており、必ず誤判定します。
+上のように**証明書ブロック単位**で比較してください。
+
 ## 使い方
 
 ```
