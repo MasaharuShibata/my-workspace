@@ -1,0 +1,380 @@
+/* my-recipe 教材動画 スライド共通スタイル
+   配色はアプリ本体(app/globals.css)のデザイントークンを流用している。 */
+
+:root {
+  --bg: #fbf5ec;
+  --surface: #ffffff;
+  --surface-alt: #f8efe0;
+  --border: #ecdec4;
+  --text: #2c231a;
+  --muted: #7c6d59;
+  --accent: #cf6a2c;
+  --accent-strong: #a8541f;
+  --accent-soft: #f7e2cd;
+  --danger: #b3402c;
+  --danger-soft: #f9e2dc;
+  --ok: #147a5b;
+  --radius: 18px;
+}
+
+@font-face { font-family: "Noto Sans JP"; font-weight: 400; src: url("../.fonts/NotoSansJP-400.ttf") format("truetype"); }
+@font-face { font-family: "Noto Sans JP"; font-weight: 500; src: url("../.fonts/NotoSansJP-500.ttf") format("truetype"); }
+@font-face { font-family: "Noto Sans JP"; font-weight: 700; src: url("../.fonts/NotoSansJP-700.ttf") format("truetype"); }
+@font-face { font-family: "Roboto Mono"; font-weight: 400; src: url("../.fonts/RobotoMono-400.ttf") format("truetype"); }
+@font-face { font-family: "Roboto Mono"; font-weight: 500; src: url("../.fonts/RobotoMono-500.ttf") format("truetype"); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans JP", sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.slide {
+  position: relative;   /* chrome-bottom / progress の基準にする */
+  width: 1920px;
+  height: 1080px;
+  padding: 64px 96px 108px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- ヘッダー / フッター ---------- */
+
+.chrome-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 22px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.chrome-top .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px var(--accent-soft);
+}
+
+.chrome-top .sep { color: var(--border); }
+.chrome-top .now { color: var(--text); font-weight: 500; }
+
+.chrome-bottom {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 20px;
+  color: var(--muted);
+}
+
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 6px;
+  background: var(--accent);
+}
+
+/* ---------- 本文領域 ---------- */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 24px;
+  overflow: hidden;
+}
+
+h1.heading {
+  font-size: 68px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 40px;
+}
+
+h2.heading {
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin-bottom: 36px;
+}
+
+.lead {
+  font-size: 34px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.rule {
+  width: 96px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 999px;
+  margin-bottom: 36px;
+}
+
+/* ---------- タイトルスライド ---------- */
+
+.title-slide .kicker {
+  font-size: 28px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-bottom: 28px;
+}
+
+.title-slide h1 {
+  font-size: 92px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 32px;
+}
+
+.title-slide .sub {
+  font-size: 34px;
+  color: var(--muted);
+}
+
+/* ---------- セクション見出し ---------- */
+
+.section-slide { justify-content: center; }
+.section-slide .num {
+  font-size: 30px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+.section-slide h1 { font-size: 76px; font-weight: 700; letter-spacing: -0.025em; }
+
+/* ---------- 箇条書き ---------- */
+
+ul.points { list-style: none; display: flex; flex-direction: column; gap: 26px; }
+
+ul.points li {
+  font-size: 38px;
+  line-height: 1.55;
+  padding-left: 46px;
+  position: relative;
+}
+
+ul.points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+ul.points li .note {
+  display: block;
+  font-size: 27px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ---------- カード / 2カラム比較 ---------- */
+
+.cards { display: flex; gap: 32px; }
+
+.card {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+}
+
+.card .card-label {
+  font-size: 24px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.card .card-title { font-size: 40px; font-weight: 700; margin-bottom: 18px; }
+.card .card-text { font-size: 28px; color: var(--muted); line-height: 1.65; }
+
+.card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.card ul li { font-size: 27px; padding-left: 26px; position: relative; line-height: 1.5; }
+.card ul li::before {
+  content: "";
+  position: absolute; left: 0; top: 16px;
+  width: 9px; height: 9px; border-radius: 50%; background: var(--border);
+}
+
+.card.bad { border-color: #e4bfb5; background: var(--danger-soft); }
+.card.bad .card-label { color: var(--danger); }
+.card.good { border-color: #b7d8cb; background: #e8f4ee; }
+.card.good .card-label { color: var(--ok); }
+
+/* ---------- 表 ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 30px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 20px 26px;
+  text-align: left;
+  line-height: 1.5;
+  vertical-align: top;
+}
+
+th {
+  background: var(--surface-alt);
+  font-weight: 700;
+  font-size: 28px;
+}
+
+td.em { font-weight: 700; color: var(--accent-strong); }
+td.muted { color: var(--muted); }
+
+/* ---------- コード ---------- */
+
+pre.code {
+  background: #2c231a;
+  color: #f3e9dc;
+  border-radius: var(--radius);
+  padding: 36px 42px;
+  font-family: "Roboto Mono", "Noto Sans JP", monospace;
+  font-size: 30px;
+  line-height: 1.62;
+  overflow: hidden;
+  white-space: pre;
+}
+
+pre.code .c { color: #9d8f7c; }              /* コメント */
+pre.code .k { color: #e59a5b; }              /* キーワード */
+pre.code .s { color: #a8cfa0; }              /* 文字列 */
+pre.code .n { color: #8fbcd4; }              /* 数値・属性 */
+pre.code .hl { background: #4a3a26; display: block; margin: 0 -42px; padding: 0 42px; }
+
+.code-caption {
+  font-size: 26px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  font-family: "Roboto Mono", "Noto Sans JP", monospace;
+}
+
+/* ---------- 注意喚起 ---------- */
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 10px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 40px 48px;
+}
+
+.callout.danger { border-left-color: var(--danger); background: var(--danger-soft); border-color: #e4bfb5; }
+.callout .callout-title { font-size: 40px; font-weight: 700; margin-bottom: 18px; }
+.callout .callout-text { font-size: 31px; line-height: 1.65; color: var(--text); }
+
+/* ---------- 図 ---------- */
+
+.diagram { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+
+.node {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 36px;
+  text-align: center;
+  min-width: 300px;
+}
+
+.node .node-title { font-size: 34px; font-weight: 700; }
+.node .node-sub { font-size: 24px; color: var(--muted); margin-top: 6px; }
+.node.accent { border-color: var(--accent); background: var(--accent-soft); }
+.node.dim { opacity: 0.55; }
+
+.arrow { display: flex; flex-direction: column; align-items: center; color: var(--muted); }
+.arrow .label { font-size: 26px; margin-bottom: 4px; }
+.arrow .glyph { font-size: 40px; color: var(--accent); line-height: 1; }
+
+.row { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.row .arrow-h { display: flex; flex-direction: column; align-items: center; min-width: 240px; }
+.row .arrow-h .label { font-size: 25px; color: var(--muted); margin-bottom: 6px; text-align: center; }
+.row .arrow-h .glyph { font-size: 34px; color: var(--accent); letter-spacing: -2px; }
+
+/* ---------- 手順フロー ---------- */
+
+ol.flow { list-style: none; display: flex; flex-direction: column; gap: 14px; counter-reset: step; }
+
+ol.flow li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 28px 20px 88px;
+  position: relative;
+  font-size: 30px;
+  line-height: 1.5;
+}
+
+ol.flow li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 26px;
+  top: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 700;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ol.flow li .who {
+  display: inline-block;
+  font-size: 24px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 2px 14px;
+  margin-right: 12px;
+}
+
+ol.flow li.dim { opacity: 0.35; }
+ol.flow li.on { border-color: var(--accent); box-shadow: 0 6px 20px rgba(207, 106, 44, 0.14); }
+
+.arrows { display: flex; flex-direction: column; gap: 14px; min-width: 300px; }
+.arrows .arrow-h { min-width: 300px; }
+.arrows .arrow-h.back .label { margin-bottom: 0; margin-top: 6px; }
