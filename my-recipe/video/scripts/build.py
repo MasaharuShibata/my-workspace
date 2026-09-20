@@ -579,6 +579,39 @@ def step_count(html, s):
     return (max(found) + 1) if found else 1
 
 
+def demo_frames(s, out_dir):
+    """`kind: demo` のコマ(実機デモの連写PNG)を並べる。
+
+    コマはHTMLから描くのではなく、scripts/capture-demo.mjs が撮ったPNGを使う。
+    `frames_dir` は out/ からの相対、または video/ からの相対で探す。
+    """
+    rel = s.get("frames_dir")
+    if not rel:
+        sys.exit("kind: demo には frames_dir が要ります: %r" % (s.get("heading") or s))
+
+    for base in (out_dir, ROOT, ""):
+        d = os.path.join(base, rel) if base else rel
+        if os.path.isdir(d):
+            break
+    else:
+        d = None
+    if not d or not os.path.isdir(d):
+        sys.exit("デモのコマが見つかりません: %s\n"
+                 "  先に `node scripts/capture-demo.mjs out/demo` で撮影してください。" % rel)
+
+    frames = sorted(f for f in os.listdir(d) if f.endswith(".png"))
+    if not frames:
+        sys.exit("デモのコマが1枚もありません: %s" % d)
+    frames = [os.path.join(d, f) for f in frames]
+
+    # ナレーションに対してコマが多すぎるときは、間引いて容量を抑える
+    cap = int(s.get("max_frames", 0))
+    if cap and len(frames) > cap:
+        frames = [frames[int(round(i * (len(frames) - 1) / float(cap - 1)))]
+                  for i in range(cap)]
+    return frames
+
+
 def step_times(n_steps, cues, duration, even):
     """各コマの開始時刻(スライド内の相対秒)を決める。
 
@@ -722,6 +755,15 @@ def main():
     print("2/4 スライドを描画")
     jobs, segments = [], []
     for i, s in enumerate(slides):
+        # 実機デモは撮影済みのPNGを流すだけ。HTMLの描画は要らない
+        if s.get("kind") == "demo":
+            frames = demo_frames(s, args.out)
+            starts = step_times(len(frames), cue_sets[i], durations[i], True)
+            for k, png in enumerate(frames):
+                end = starts[k + 1] if k + 1 < len(frames) else durations[i]
+                segments.append((png, max(0.02, end - starts[k])))
+            continue
+
         html_path = os.path.join(work, "s%03d.html" % i)
         html = render_slide(meta, s, i, total)
         open(html_path, "w", encoding="utf-8").write(html)

@@ -3,3 +3,4 @@ out/
 # ビルド時に取得するもの
 .fonts/
 node_modules/
+__pycache__/
