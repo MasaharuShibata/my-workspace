@@ -11,9 +11,9 @@
 [`tutorial/00_index.md`](./tutorial/00_index.md) にあります(設計書とは別の読み物です)。
 
 教材の内容を、耳だけで聴いて理解できるように書き直した音声学習版が
-[`tutorial-audio/00_index.md`](./tutorial-audio/00_index.md) にあります。
-スマートフォンの読み上げアプリでの利用を想定しています(詳細は
-[`tutorial-audio/README.md`](./tutorial-audio/README.md))。
+[`tutorial-audio.md`](./tutorial-audio.md) にあります。全26章を1ファイルにまとめてあり、
+スマートフォンの読み上げアプリに入れて使うことを想定しています。
+各章の冒頭から本編の該当ファイルへ飛べます。
 
 ## 構成
 
