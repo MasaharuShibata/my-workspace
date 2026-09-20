@@ -1,48 +1,48 @@
 # 動画版 作成の進捗
 
-毎時のスケジュール実行が、このファイルを見て次にやることを決める。
-**人が編集してもよい。** 状態を「保留」にすれば、その章は飛ばされる。
+**1章につき1セッション**で作る。コンテキストが膨らむので、1つのセッションで
+複数章をまとめて作らないこと。
+
+このファイルがセッション間で共有できる唯一の状態。着手したら必ず更新して push する。
 
 台本(YAML)のファイル名は、原本と同じ stem にする。
 例: `tutorial/11_build-03-form.md` → `chapters/11_build-03-form.yaml`
 
 ---
 
-## 全体の流れ
+## セッションの始め方
 
-各章は2つのステップに分かれている。**1回の実行で1ステップだけ**進める。
+新しいセッションを開き、作る章を指定して依頼する。以下をそのまま使える。
 
-| ステップ | やること | 成果物 | セッションが落ちたら |
-|---|---|---|---|
-| **A** | 台本(YAML)を書く | Gitにコミット | やり直し(台本は残っていない) |
-| **B** | デモを撮り、動画を生成して渡す | mp4 を `SendUserFile` | Aはそのまま。Bだけやり直し |
+```
+my-recipe 開発教材の動画、第NN章を作ってください。
 
-**先に全章のAを終わらせてから、Bに入る。** 表を上から見て「未着手」を探し、
-1つも無くなったら「台本済」を探す、という順で拾えばそうなる。
+- my-recipe/video/PROGRESS.md で、この章に使うデモシーンを確認してください
+- my-recipe/video/README.md と CLAUDE.md「教材コンテンツ(音声版・動画版)を作るとき」に従ってください
+- chapters/01_web-app-overview.yaml が書き方の手本です
+```
+
+### 1セッションでやること
+
+1. `tutorial/<章>_*.md` を読み、`chapters/<同じstem>.yaml` を書く
+2. デモを撮る（`demoapp/setup.sh` → `capture-demo.mjs --scenes <下の表の値>`）
+3. 動画を生成し、確認して `SendUserFile` で渡す
+4. この表の状態を更新し、commit / push して PR を作る
+
+尺が長くなりそうなら、**台本を書いた時点で一度区切ってよい**（状態を「台本済」にして
+push しておけば、次のセッションが動画生成から再開できる）。
 
 ---
 
-## 運用ルール
-
-- **1回の実行で1ステップだけ。** 終わったら、次の行に手を付けずに終了する
-- 着手する前に、その行の状態を「台本作成中」または「動画生成中」に書き換え、
-  開始時刻(UTC)と自分のセッションIDを入れて **commit / push する。これが排他ロック**
-- 「◯◯中」のまま **2時間以上** 経っている行は、落ちたものとみなして奪ってよい
-- 「◯◯中」で2時間以内の行があれば、**他のセッションが作業中**。何もせず終了する
-- 詰まったら状態を「要確認」にし、理由を備考に書いて commit / push してから終える。
-  **「◯◯中」のまま終わらない**
-
-### 状態
+## 状態
 
 | 状態 | 意味 |
 |---|---|
-| 未着手 | これから台本を書く |
-| 台本作成中 | ステップA 実行中(ロック) |
-| 台本済 | 台本がコミットされている。次はステップB |
-| 動画生成中 | ステップB 実行中(ロック) |
+| 未着手 | まだ何もしていない |
+| 台本済 | 台本はコミット済み。動画生成から再開できる |
 | 完了 | 動画を渡した |
-| 要確認 | 詰まった。人が見るまで自動実行は触らない |
-| 保留 | 人が意図的に止めている。飛ばす |
+| 要確認 | 詰まった。備考に理由を書く |
+| 保留 | 意図的に後回し |
 
 ---
 
@@ -51,33 +51,33 @@
 「使うデモ」は `scripts/capture-demo.mjs --scenes` にそのまま渡す値。
 撮れるシーンと尺の目安は `README.md`「実機デモ」を参照。
 
-| 章 | 題 | 使うデモ | 状態 | 開始(UTC) | セッション | 備考 |
-|---|---|---|---|---|---|---|
-| 01 | Webアプリのしくみ | input,thinking,result,save,list | 完了 | - | - | 13分15秒 / 納品済 |
-| 02 | 開発環境を準備する | input,thinking,result | 未着手 | - | - | |
-| 03 | HTMLとCSS | input,result | 未着手 | - | - | |
-| 04 | JavaScript | validation,thinking,result | 未着手 | - | - | 非同期処理の説明にthinkingを使う |
-| 05 | TypeScript | result,thinking | 未着手 | - | - | レシピの型の話にresultを使う |
-| 06 | React | input,result | 未着手 | - | - | チェックボックスがstateの実例 |
-| 07 | Next.js | list,thinking | 未着手 | - | - | 画面遷移とサーバー側の処理 |
-| 08 | 設計する | input,result,list | 未着手 | - | - | 何を作ると決めたかを実物で示す |
-| 09 | Step1 プロジェクトを作る | input | 未着手 | - | - | |
-| 10 | Step2 動かない画面を作る | input,result | 未着手 | - | - | 見た目だけの話 |
-| 11 | Step3 フォームを動かす | validation,input | 未着手 | - | - | validationが主役 |
-| 12 | Step4 サーバー側の処理 | thinking,result | 未着手 | - | - | まだ偽レシピの段階 |
-| 13 | Step5 Claude APIに繋ぐ | thinking,result,regenerate | 未着手 | - | - | |
-| 14 | Step6 データベースに保存 | save | 未着手 | - | - | |
-| 15 | Step7 お気に入り一覧 | list,delete | 未着手 | - | - | |
-| 16 | Step8 残りの機能 | regenerate,delete | 未着手 | - | - | |
-| 17 | Step9 CSSで仕上げる | input,result | 未着手 | - | - | 仕上がった見た目を見せる |
-| 18 | デプロイ | input,thinking,result | 未着手 | - | - | |
-| 19 | 試験 | validation,input,result | 未着手 | - | - | 試験項目の実例として |
-| 20 | エラーの読み方 | validation,thinking | 未着手 | - | - | |
-| 21 | 次に学ぶこと | list,regenerate | 未着手 | - | - | |
-| 22 | ネットワークの基礎 | thinking,result | 未着手 | - | - | リクエストが飛ぶ瞬間 |
-| 23 | Vercelの仕組み | input,thinking,result | 未着手 | - | - | |
-| 24 | Supabaseの仕組み | save,list,delete | 未着手 | - | - | CRUDが揃う |
-| 25 | 商用化 | input,thinking,save | 未着手 | - | - | どこでお金が動くか |
+| 章 | 題 | 使うデモ | 状態 | 備考 |
+|---|---|---|---|---|
+| 01 | Webアプリのしくみ | input,thinking,result,save,list | 完了 | 13分15秒 / 納品済 |
+| 02 | 開発環境を準備する | input,thinking,result | 未着手 | |
+| 03 | HTMLとCSS | input,result | 未着手 | |
+| 04 | JavaScript | validation,thinking,result | 未着手 | 非同期処理の説明にthinkingを使う |
+| 05 | TypeScript | result,thinking | 未着手 | レシピの型の話にresultを使う |
+| 06 | React | input,result | 未着手 | チェックボックスがstateの実例 |
+| 07 | Next.js | list,thinking | 未着手 | 画面遷移とサーバー側の処理 |
+| 08 | 設計する | input,result,list | 未着手 | 何を作ると決めたかを実物で示す |
+| 09 | Step1 プロジェクトを作る | input | 未着手 | |
+| 10 | Step2 動かない画面を作る | input,result | 未着手 | 見た目だけの話 |
+| 11 | Step3 フォームを動かす | validation,input | 未着手 | validationが主役 |
+| 12 | Step4 サーバー側の処理 | thinking,result | 未着手 | まだ偽レシピの段階 |
+| 13 | Step5 Claude APIに繋ぐ | thinking,result,regenerate | 未着手 | |
+| 14 | Step6 データベースに保存 | save | 未着手 | |
+| 15 | Step7 お気に入り一覧 | list,delete | 未着手 | |
+| 16 | Step8 残りの機能 | regenerate,delete | 未着手 | |
+| 17 | Step9 CSSで仕上げる | input,result | 未着手 | 仕上がった見た目を見せる |
+| 18 | デプロイ | input,thinking,result | 未着手 | |
+| 19 | 試験 | validation,input,result | 未着手 | 試験項目の実例として |
+| 20 | エラーの読み方 | validation,thinking | 未着手 | |
+| 21 | 次に学ぶこと | list,regenerate | 未着手 | |
+| 22 | ネットワークの基礎 | thinking,result | 未着手 | リクエストが飛ぶ瞬間 |
+| 23 | Vercelの仕組み | input,thinking,result | 未着手 | |
+| 24 | Supabaseの仕組み | save,list,delete | 未着手 | CRUDが揃う |
+| 25 | 商用化 | input,thinking,save | 未着手 | どこでお金が動くか |
 
 `tutorial/00_index.md` は索引なので動画化しない。内容は第1章の導入に入っている。
 
@@ -86,7 +86,5 @@
 ## 動画の受け取りについて
 
 mp4 は **Git管理しない**ので、生成したセッションのチャットにしか残らない。
-コンテナは破棄されるため、**渡したあとに回収されないと消える**。
-
-ステップBに入るのは全章の台本が揃ってからなので、それまでは回収は発生しない。
-Bを始める前に、受け取り方(何章ずつ進めるか)を人に確認すること。
+コンテナは破棄されるため、**そのセッションで受け取らないと消える**。
+作ったらその場で `SendUserFile` で渡すこと。
