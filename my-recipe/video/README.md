@@ -11,6 +11,7 @@
 | `chapters/*.yaml` | 章ごとの台本。スライド1枚につき「画面に出す内容」と「ナレーション」を持つ |
 | `scripts/build.py` | ビルド本体。台本 → 画像 → 音声 → MP4 + SRT |
 | `scripts/render.mjs` | スライドの描画。1プロセスで全コマを撮る |
+| `scripts/capture-demo.mjs` | 実機デモの撮影。アプリを操作しながら連写する |
 | `scripts/slides.css` | スライドの見た目。配色はアプリ本体のデザイントークンを流用 |
 | `out/` | 生成物。**Git管理しない**(`.gitignore`) |
 
@@ -49,6 +50,12 @@ python3 scripts/build.py chapters/01_web-app-overview.yaml
 
 `out/01_web-app-overview.mp4` と `out/01_web-app-overview.srt` ができます。
 
+台本に `kind: demo` のスライドがある章は、先にデモの撮影が要ります(後述)。
+
+```
+node scripts/capture-demo.mjs out/demo http://localhost:3000
+```
+
 確認用のオプションもあります。
 
 ```
@@ -83,6 +90,7 @@ python3 scripts/build.py chapters/01_web-app-overview.yaml --slides-only --only 
 | `verdict` | ✕と○、AとBの対比を大きく | `sides`（`badge` / `head` / `desc` / `tone`） |
 | `split` | 左に図・右に言葉 | `icon` または `diagram` / `big` / `small` |
 | `anim` | コマ送りのアニメーション | `name` / `frames` |
+| `demo` | 実機デモ(撮影済みのPNG列を流す) | `frames_dir` / `max_frames` |
 | `title` | 表紙・次回予告 | `kicker` / `heading` / `sub` |
 | `section` | 節の見出し | `num` / `heading` |
 | `table` | 表 | `head` / `rows` |
@@ -121,6 +129,42 @@ python3 scripts/build.py chapters/01_web-app-overview.yaml --slides-only --only 
 |---|---|
 | `request-response` | リクエストとレスポンスが往復する |
 | `key-leak` | ブラウザに置いたAPIキーが外へ漏れていく |
+
+### 実機デモ
+
+`kind: demo` は、**アプリを実際に動かしているところ**をスライドとして挟みます。
+コマはHTMLから描くのではなく、`scripts/capture-demo.mjs` が撮ったPNG列をそのまま流します。
+
+撮影は、アプリを起動した状態で次のように行います。
+
+```
+node scripts/capture-demo.mjs out/demo http://localhost:3000
+```
+
+`out/demo/<シーン名>/0000.png ...` が出来るので、台本からはシーン名で指定します。
+
+```yaml
+- kind: demo
+  frames_dir: "demo/input"
+  narration: |
+    冷蔵庫に残っている食材を打ち込んで、ジャンルを選びます。
+```
+
+⚠️ **本番のアプリを撮らないこと。** Claude APIの課金が発生し、本番DBにテストデータが入り、
+Vercelのレート制限を誘発します。アプリ一式を作業用ディレクトリへコピーし、
+`lib/claude.ts`(決め打ちのレシピを数秒待って返す)と
+`lib/supabase/server.ts`(メモリ上の配列で動く偽クライアント)だけを
+スタブに差し替えて起動してください。画面・CSS・操作は実物と同じままです。
+
+⚠️ **シーンの長さとナレーションの長さを合わせること。** コマは尺に合わせて等間隔に
+引き伸ばされるため、ナレーションが撮影より長いとスロー再生になります。
+文字入力やスクロールが入るシーンは、実時間の1.2倍を超えると目に見えて不自然です
+(ほぼ静止している「考案中」のようなシーンは、2倍でも分かりません)。
+撮影側の待ち時間を調整して合わせます。
+
+なお、アプリ側の拡大は枠の `transform: scale()` ではなく、アプリ文書への
+`zoom` で行っています。`transform` だとPlaywrightのクリック位置計算がずれて、
+`<main> intercepts pointer events` で操作できなくなります。
 
 細かい記法をいくつか。
 
