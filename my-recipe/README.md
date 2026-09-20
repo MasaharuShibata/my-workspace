@@ -10,6 +10,11 @@
 このアプリをゼロから作る手順を、Webアプリ開発が初めての人向けに解説した学習教材が
 [`tutorial/00_index.md`](./tutorial/00_index.md) にあります(設計書とは別の読み物です)。
 
+教材の内容を、耳だけで聴いて理解できるように書き直した音声学習版が
+[`tutorial-audio/00_index.md`](./tutorial-audio/00_index.md) にあります。
+スマートフォンの読み上げアプリでの利用を想定しています(詳細は
+[`tutorial-audio/README.md`](./tutorial-audio/README.md))。
+
 ## 構成
 
 - Next.js(App Router) + TypeScript
