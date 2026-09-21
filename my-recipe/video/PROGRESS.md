@@ -59,7 +59,7 @@ push しておけば、次のセッションが動画生成から再開できる
 | 04 | JavaScript | validation,thinking,result | 未着手 | 非同期処理の説明にthinkingを使う |
 | 05 | TypeScript | result,thinking | 未着手 | レシピの型の話にresultを使う |
 | 06 | React | input,result | 未着手 | チェックボックスがstateの実例 |
-| 07 | Next.js | list,thinking | 未着手 | 画面遷移とサーバー側の処理 |
+| 07 | Next.js | thinking,list | 完了 | 13分55秒 / 納品済。台本の並びを撮影の採番に合わせ thinking→list にした |
 | 08 | 設計する | input,result,list | 未着手 | 何を作ると決めたかを実物で示す |
 | 09 | Step1 プロジェクトを作る | input | 未着手 | |
 | 10 | Step2 動かない画面を作る | input,result | 未着手 | 見た目だけの話 |
