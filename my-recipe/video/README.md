@@ -169,8 +169,14 @@ python3 scripts/build.py chapters/01_web-app-overview.yaml --slides-only --only 
 
 ```
 bash demoapp/setup.sh                 # コピーを作り、スタブを当てて localhost:3000 で起動
+export CHROME_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome
 node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes input,result
 ```
+
+⚠️ `CHROME_PATH` を渡さないと、`playwright-core` が自前の版番号で
+`chrome-headless-shell` を探しに行き、`Executable doesn't exist` で止まります
+(この環境に入っているのは `chromium-1194` の通常ビルド)。
+`npx playwright install` は実行しないこと。`build.py` も同じ変数を見ます。
 
 `setup.sh` は、アプリ一式を作業用ディレクトリへコピーし、外部サービスを呼ぶ層
 (`lib/claude.ts` と `lib/supabase/server.ts`)だけを `demoapp/stubs/` のスタブに

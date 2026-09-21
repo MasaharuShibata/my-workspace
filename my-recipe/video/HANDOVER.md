@@ -82,6 +82,10 @@
   ⚠️ 「もう入っているか」を雑に判定しないこと。あのファイルは
   **システムのルート証明書一式 + プロキシのCA** という構成なので、
   先頭の証明書だけ見ると必ず「入っている」と誤判定する
+- **Chromiumは `CHROME_PATH` で明示する**。`playwright-core` の既定の探し方だと
+  `chrome-headless-shell` を探して `Executable doesn't exist` になる。
+  `export CHROME_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` を先に流す
+  (撮影・ビルドの両方で要る)。`npx playwright install` はしないこと
 - **Playwright同梱のffmpegは使えない**(VP8のみ・音声非対応)。
   `npm install` で入る `ffmpeg-static` を使う
 - **日本語の音声は `WordBoundary` を返さない**。`SentenceBoundary` を使う
