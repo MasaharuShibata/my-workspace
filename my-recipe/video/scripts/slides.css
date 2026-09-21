@@ -265,6 +265,9 @@ td.muted { color: var(--muted); }
 /* ---------- コード ---------- */
 
 pre.code {
+  /* 本文領域(flex)の中で縮まないようにする。縮むと overflow: hidden で
+     下の行が黙って切れてしまい、build.py の自動縮小も働かないため。 */
+  flex: none;
   background: #2c231a;
   color: #f3e9dc;
   border-radius: var(--radius);

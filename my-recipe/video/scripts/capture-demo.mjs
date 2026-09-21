@@ -270,15 +270,15 @@ async function scene(name, cap, body) {
 const SCENES = [
   // 入力チェック。ブラウザ側で止めていることを見せる
   ["validation", ["まず入力チェック", "空のまま押すと、送る前にブラウザが止める"], async () => {
-    await wait(1000);
+    await wait(1200);
     await press(app.locator(".ingredient-form button[type=submit]"));
-    await wait(2200);
+    await wait(3600);
     const box = app.locator("#ingredients");
     await box.click();
     await box.pressSequentially("1,2,3,4,5,6,7,8,9,10,11", { delay: 90 });
-    await wait(800);
+    await wait(1000);
     await press(app.locator(".ingredient-form button[type=submit]"));
-    await wait(2400);
+    await wait(4200);
   }],
 
   // 食材を入力してジャンルを選ぶ
