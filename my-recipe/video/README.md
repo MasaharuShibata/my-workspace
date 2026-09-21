@@ -169,8 +169,14 @@ python3 scripts/build.py chapters/01_web-app-overview.yaml --slides-only --only 
 
 ```
 bash demoapp/setup.sh                 # コピーを作り、スタブを当てて localhost:3000 で起動
-node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes input,result
+CHROME_PATH=/opt/pw-browsers/chromium \
+  node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes input,result
 ```
+
+⚠️ 撮影側は `CHROME_PATH` を明示すること。指定しないと playwright-core が
+`chrome-headless-shell` を探しに行き、この環境には無いので
+「`npx playwright install` を実行してください」と言われて止まります
+(指示に反してインストールしないこと。同梱のChromiumを指せば済みます)。
 
 `setup.sh` は、アプリ一式を作業用ディレクトリへコピーし、外部サービスを呼ぶ層
 (`lib/claude.ts` と `lib/supabase/server.ts`)だけを `demoapp/stubs/` のスタブに
@@ -188,7 +194,7 @@ Vercelのレート制限を誘発します。必ず `setup.sh` で作ったコ�
 
 | シーン | 内容 | 尺の目安 |
 |---|---|---|
-| `validation` | 空のまま送信 → エラー。11個入れて → エラー | 約10秒 |
+| `validation` | 空のまま送信 → エラー。11個入れて → エラー | 約10.5秒 |
 | `input` | 食材を入力してジャンルを選び、ボタンを押す | 約8.5秒 |
 | `thinking` | 「考案中...」。画面はほぼ静止する | 約3.5秒 |
 | `result` | レシピが出る。スクロールして材料にチェック | 約14.5秒 |
