@@ -1,0 +1,596 @@
+# my-recipe 開発教材 動画版 第9章
+# 原本: my-recipe/tutorial/09_build-01-project.md
+#
+# この章は Part 3(手を動かして作る)の1本目。
+# 原本の節順(順番 → 作成 → 中身 → 片付け → フォルダ → 型 → Git)は追わず、
+# 「この章で答える3つの問い」に組み替える。
+#
+#   ① なぜ、この順番で作るのか
+#   ② コマンド1つで出てきたものは、何なのか
+#   ③ なぜ、コードより先に「型」を書くのか
+#
+# 冒頭は完成形のデモ(demo/input)を流し、
+# 「今日の終わりに出るのは文字2行だけ」という落差で掴む。
+# 終盤で同じデモを回収する。今日書く GENRES が、あのジャンル欄そのものになる。
+#
+# デモのコマは scripts/capture-demo.mjs --scenes input で撮る。
+
+title: "Step 1 プロジェクトを作る"
+footer: "my-recipe 開発教材 #9"
+voice: "ja-JP-NanamiNeural"
+rate: "+6%"
+
+slides:
+
+# ============================================================ 導入
+
+- kind: punch
+  text: "ここから、\n実際に手を動かします。"
+  em: ["実際に手を動かします"]
+  sub: "8章までに決めた設計を、コードに変えていきます。"
+  narration: |
+    ここから、実際に手を動かします。
+    8章までに決めた設計を、コードに変えていく段階です。
+
+- kind: demo
+  frames_dir: "demo/input"
+  narration: |
+    作るのは、この画面です。
+    食材を打ち込んで、ジャンルを選び、ボタンを押す。
+
+- kind: verdict
+  heading: "ただし、今日はここまで来ません"
+  sides:
+  - badge: "第9章の終わり"
+    head: "文字が2行、出るだけ"
+    desc: "入力欄も、ボタンも、色も、まだ無い。"
+    at: 1
+  - badge: "第17章の終わり"
+    head: "さっきの画面"
+    desc: "AIが動いて、保存もできる状態。"
+    tone: "ok"
+    at: 2
+  narration: |
+    ただし、今日そこまでは行きません。
+    この章の終わりに画面に出るのは、タイトルと説明文の、文字2行だけです。
+    入力欄もボタンも色も、まだありません。
+    さっきの画面になるのは、九つ先の第17章です。
+
+- kind: punch
+  text: "それでも、\n土台としては完璧です。"
+  em: ["土台としては完璧"]
+  sub: "この章でやるのは、これから書く全部が乗る場所を、正しく作ること。"
+  narration: |
+    それでも、土台としては完璧、と言い切れます。
+    この章でやるのは、これから書く全部が乗る場所を、正しく作ることだからです。
+    ここが雑だと、後の章で作ったものが、まとめて崩れます。
+
+- kind: section
+  num: "第9章"
+  heading: "Step 1 プロジェクトを作る"
+  narration: |
+    第9章、Step 1、プロジェクトを作る。
+
+- kind: agenda
+  heading: "この章で答える、3つの問い"
+  items:
+  - "なぜ、この順番で作るのか？"
+  - "コマンド1つで出てきたものは、何なのか？"
+  - "なぜ、コードより先に「型」を書くのか？"
+  narration: |
+    答える問いは3つです。
+    1つめ。なぜ、この順番で作るのか。
+    2つめ。コマンド1つで出てきたものは、何なのか。
+    3つめ。なぜ、コードより先に、型を書くのか。
+
+# ============================================================ 問い① 順番
+
+- kind: agenda
+  heading: "まず1つめ"
+  items:
+  - { text: "なぜ、この順番で作るのか？", state: "now", at: 0 }
+  - { text: "コマンド1つで出てきたものは、何なのか？", at: 0 }
+  - { text: "なぜ、コードより先に「型」を書くのか？", at: 0 }
+  reveal: false
+  narration: |
+    まず1つめ。なぜ、この順番で作るのか。
+
+- kind: table
+  heading: "これから、9つのステップで作ります"
+  head: ["Step", "やること", "なぜ、ここなのか"]
+  rows:
+  - ["1 - 3", "*土台 → 動かない画面 → フォームを動かす", "ブラウザの中だけで完結する"]
+  - ["4 - 5", "*偽レシピを返すAPI → 本物のAIに差し替え", "*通信とAIを、切り離して確かめる"]
+  - ["6 - 7", "データベースに保存 → お気に入り一覧", "保存できてから、読み出しを作る"]
+  - ["8 - 9", "残りの機能 → CSSで仕上げる", "*仕上げは最後。早いと作り直しになる"]
+  narration: |
+    九つのステップの、全体像です。
+    Step 1 から 3 は、ブラウザの中だけで完結します。土台を作り、画面を作り、それを動かす。
+    Step 4 と 5 が、この順番の肝です。まず偽のレシピを返すAPIを作り、それから本物のAIに差し替えます。
+    Step 6 と 7 で、データベースに保存して、読み出す。ここまでで、必ず要る機能が揃います。
+    残りの 8 と 9 で、あると嬉しい機能を足して、最後にCSSで仕上げます。
+
+- kind: punch
+  text: "一番やってはいけないのは、\nStep 5 から始めること。"
+  ng: ["Step 5 から始めること"]
+  sub: "「AIに繋ぐのが本体だから」と、そこから書き始めてしまう。"
+  narration: |
+    ここで、一番やってはいけないことを先に言います。
+    Step 5 から始めることです。
+    AIに繋ぐのがこのアプリの本体だから、と、そこから書き始めてしまう。
+
+- kind: verdict
+  heading: "そうすると、どうなるか"
+  sides:
+  - badge: "✕"
+    tone: "ng"
+    head: "中身から作る"
+    desc: "画面が無い。通信も確かめられない。\nエラーが出ても、どこが悪いか切り分けられない。"
+    at: 1
+  - badge: "○"
+    tone: "ok"
+    head: "外側から作る"
+    desc: "動く状態のまま、1つずつ足す。\n壊れたら、いま足したものが原因。"
+    at: 2
+  narration: |
+    そうすると、画面が無い、通信も確かめられない、という状態になります。
+    エラーが出ても、AIが悪いのか、通信が悪いのか、自分のコードが悪いのか、切り分けられません。
+    外側から作れば、いつも動く状態のまま、1つずつ足していけます。
+    壊れたら、原因はいま足したものです。
+
+- kind: punch
+  text: "動く状態を、切らさない。"
+  em: ["切らさない"]
+  sub: "この教材を通して、ずっとこれです。"
+  narration: |
+    動く状態を、切らさない。
+    この教材を通して、ずっとこの方針です。
+    1つめの問いの答えは、これです。
+
+# ============================================================ 問い② 出てきたもの
+
+- kind: agenda
+  heading: "2つめ"
+  items:
+  - { text: "なぜ、この順番で作るのか？", state: "done", at: 0 }
+  - { text: "コマンド1つで出てきたものは、何なのか？", state: "now", at: 0 }
+  - { text: "なぜ、コードより先に「型」を書くのか？", at: 0 }
+  reveal: false
+  narration: |
+    2つめ。コマンド1つで出てきたものは、何なのか。
+
+- kind: code
+  heading: "プロジェクトは、1行で作ります"
+  caption: "ターミナル"
+  code: |
+    npx create-next-app@latest my-recipe
+  reveal: false
+  narration: |
+    作業したいフォルダに移動して、これを打ちます。
+    クリエイト・ネクスト・アップ。Next.jsの公式が用意している、ひな形を作るコマンドです。
+    最後の my-recipe が、作られるフォルダの名前になります。
+
+- kind: callout
+  title: "npx とは"
+  text: |
+    そのパッケージを、インストールせずに1回だけ実行するコマンド。
+    ひな形作りは一度きりなので、手元に残す必要がありません。
+  narration: |
+    先頭の npx、エヌ・ピー・エックスは、そのパッケージをインストールせずに、
+    1回だけ実行するコマンドです。
+    ひな形を作るのは一度きりなので、手元に残しておく必要がありません。
+
+- kind: table
+  heading: "7つ質問されます。答えはこれです"
+  head: ["質問", "答え", "理由"]
+  rows:
+  - ["TypeScript", "*Yes", "05章の通り。初心者ほど、型の恩恵が大きい"]
+  - ["ESLint", "Yes", "書き方のミスを、自動で指摘してくれる"]
+  - ["Tailwind CSS", "*No", "*CSSを学ぶのが目的だから"]
+  - ["src ディレクトリ", "No", "階層が1つ増えるだけ"]
+  - ["App Router", "*Yes", "07章で学んだ新しい方式。必須"]
+  - ["Turbopack", "No", "速いが、まだ挙動が変わる。安定を取る"]
+  - ["import alias", "No", "既定の @ をそのまま使う"]
+  narration: |
+    打つと、7つ質問されます。答えはこのとおりです。
+    大事なのは3つだけ。TypeScript は Yes。05章でやったとおり、初心者ほど型の恩恵が大きい。
+    App Router も Yes。07章で学んだ新しい方式で、ここは必須です。
+    そして Tailwind CSS は、No。これだけ、理由を説明します。
+
+- kind: punch
+  text: "Tailwind CSS は、あえて No。"
+  em: ["あえて No"]
+  sub: "CSSを知らないままTailwindを使うと、何も理解できないまま終わります。"
+  narration: |
+    Tailwind は、実務ではよく使われる便利な道具です。それでもここでは、あえて No にします。
+    CSSを知らないままTailwindを使うと、動いたけれど何も分かっていない、で終わるからです。
+    まず素のCSSで作って、必要になったら乗り換える。
+
+- kind: code
+  heading: "出来上がるのは、これだけ"
+  caption: "my-recipe/"
+  code: |
+    app/
+      globals.css        ← 全体のCSS
+      layout.tsx         ← 全ページ共通の枠
+      page.tsx           ← トップページ("/")
+    public/              ← 画像などの置き場
+    node_modules/        ← 部品の実体(触らない・Gitに入れない)
+    .gitignore
+    next.config.mjs      ← Next.jsの設定(今回は空のまま)
+    package.json         ← 使う部品の一覧
+    tsconfig.json        ← TypeScriptの設定
+  reveal: false
+  narration: |
+    出来上がるのは、これだけです。
+    app フォルダの中に、全体のCSSと、全ページ共通の枠と、トップページ。
+    node_modules は、ダウンロードされてきた部品の実体です。触りませんし、Gitにも入れません。
+    残りは設定ファイル。この章で見るのは、そのうち2つだけです。
+
+- kind: code
+  heading: "1つめ。package.json"
+  caption: "package.json"
+  code: |
+    "scripts": {
+      "dev": "next dev",       ← npm run dev で開発サーバー起動
+      "build": "next build",   ← 公開用に固める
+      "start": "next start",   ← 固めたものを動かす
+      "lint": "next lint"      ← 書き方のチェック
+    }
+  reveal: false
+  narration: |
+    1つめ、package.json。このアプリが使う部品の一覧です。
+    見てほしいのは scripts のところ。
+    ここに書いた名前が、そのまま npm run 名前 で動かせるコマンドになります。
+    さっそく npm run dev と打って、ローカルホスト3000番を開いてください。
+    Next.jsの初期画面が出れば、成功です。
+
+- kind: code
+  heading: "2つめ。tsconfig.json の、この2行"
+  caption: "tsconfig.json"
+  code: |
+    "strict": true,
+    "paths": { "@/*": ["./*"] }
+  reveal: false
+  narration: |
+    2つめ、tsconfig.json。見るのは2行だけです。
+    strict は、型チェックを厳しくする設定。必ず true のままにしてください。
+    paths のほうは、04章で出てきたアットマークの設定です。
+    フォルダのどこから呼んでも、同じファイルを指してくれます。
+
+- kind: callout
+  tone: "danger"
+  title: "ここだけは、目で確認する"
+  text: |
+    .gitignore の中に node_modules と .env がある。
+    ここを事故ると、取り返しがつきません。
+  narration: |
+    そして .gitignore を開いて、目で確認してください。
+    node_modules と、ドット・イー・エヌ・ブイ。この2つが書いてあることです。
+    前者は容量の話ですが、後者は事故の話です。
+    APIキーの入ったファイルを一度でも公開の場所に上げると、取り返しがつきません。
+
+# ------------------------------------------------------------ 片付け
+
+- kind: punch
+  text: "ここからの作業は、\nまず「消す」ことから始まります。"
+  em: ["「消す」"]
+  narration: |
+    さて、ひな形はできました。ここからの作業は、まず消すことから始まります。
+
+- kind: verdict
+  heading: "ひな形に入っているもの"
+  sides:
+  - badge: "入っている"
+    head: "Next.jsのサンプル画面"
+    desc: "ロゴ、リンク集、大量のサンプルCSS。\n「動いていますよ」を見せるためのもの。"
+    at: 1
+  - badge: "自分のアプリ"
+    head: "1文字も要らない"
+    desc: "残すと、自分のCSSと喧嘩する。\n全部消してから書く。"
+    tone: "ng"
+    at: 2
+  narration: |
+    ひな形には、Next.jsのサンプル画面が入っています。ロゴ、リンク集、それを飾る大量のCSS。
+    ちゃんと動いていますよ、を見せるためのものです。
+    自分のアプリには、1文字も要りません。
+    中途半端に残すと、後で書く自分のCSSと喧嘩して、原因の分からない崩れ方をします。
+
+- kind: code
+  heading: "① app/page.tsx は、これだけにする"
+  caption: "app/page.tsx"
+  code: |
+    export default function HomePage() {
+      return (
+        <main>
+          <h1>my-recipe</h1>
+          <p>手元にある食材を入力すると、AIがそれらを活かしたレシピを考案します。</p>
+        </main>
+      );
+    }
+  reveal: false
+  narration: |
+    まず、トップページ。元の中身は全部消して、これに置き換えます。
+    見出しが1つと、説明文が1行。今日の終わりに画面に出るのは、この2行です。
+
+- kind: code
+  heading: "② app/globals.css も、土台だけ"
+  caption: "app/globals.css"
+  code: |
+    >>* {
+    >>  box-sizing: border-box;
+    >>}
+
+    html, body { margin: 0; padding: 0; }
+
+    body { line-height: 1.65; }
+
+    a { color: inherit; text-decoration: none; }
+
+    button { font-family: inherit; cursor: pointer; }
+  reveal: false
+  narration: |
+    次にCSS。こちらも全部消して、土台だけにします。
+    デザインはStep 9でやるので、今は色も配置も書きません。
+    余白を消して、リンクの下線を取って、ボタンの見た目を揃える。それだけです。
+    強調してあるいちばん上の3行だけ、特別です。
+
+- kind: bigstat
+  value: "120"
+  unit: "px"
+  formula: "width: 100px  ＋  padding: 10px × 2"
+  caption: "box-sizing を書かないときの、実際の幅。"
+  narration: |
+    box-sizing、ボックス・サイジング。これを書かないと、こうなります。
+    幅100ピクセルと指定した箱に、内側の余白を10ピクセルずつ足すと、
+    実際の幅は120ピクセルになります。指定した数字より、太る。
+    border-box と書いておくと、余白ごと100ピクセルに収めてくれます。
+
+- kind: punch
+  text: "box-sizing: border-box は、\n最初に必ず書く1行。"
+  em: ["最初に必ず書く1行"]
+  sub: "これを知らないと、幅が合わない理由が一生わかりません。"
+  narration: |
+    ボーダー・ボックス。これは、最初に必ず書く1行だと思ってください。
+    知らないまま作ると、並べた箱の幅がなぜか合わない、という状態にはまります。
+
+- kind: split
+  icon: "browser"
+  heading: "③ app/layout.tsx を整える"
+  big: "全ページに共通の「枠」"
+  small: "HTMLの外側は、このファイルにしかない。\n各ページの中身は、children のところに入る。"
+  narration: |
+    3つめ、レイアウトです。
+    これは、全ページに共通の枠を書くファイルです。
+    HTMLの外側の部分は、アプリ中でこのファイルにしかありません。
+    そして各ページの中身は、children、チルドレンと書いた場所に入ります。
+
+- kind: code
+  heading: "枠に入れておくもの"
+  caption: "app/layout.tsx(抜粋)"
+  code: |
+    const notoSans = Noto_Sans_JP({ weight: ["400","500","700","900"], ... });
+
+    export const metadata: Metadata = {
+      title: "my-recipe",
+      description: "手元にある食材からAIがレシピを考案するレシピ提案アプリ",
+    };
+
+    <html lang="ja" className={notoSans.variable}>
+      <body>{children}</body>
+    </html>
+  reveal: false
+  narration: |
+    枠に入れておくものは、3つです。
+    1つめ、フォント。Noto Sans JP を、Next.jsが自動で同梱してくれます。表示が速くなります。
+    2つめ、メタデータ。タブに出るタイトルと、検索結果に出る説明文です。
+    3つめ、lang イコール ja。日本語のページだと宣言しておくと、
+    読み上げソフトや翻訳が正しく働きます。
+
+# ------------------------------------------------------------ フォルダ
+
+- kind: code
+  heading: "④ 空のフォルダを、先に作る"
+  caption: "ターミナル"
+  code: |
+    mkdir components
+    mkdir lib
+    mkdir lib/supabase
+    mkdir supabase
+    mkdir -p app/api/generate-recipe
+    mkdir app/favorites
+  reveal: false
+  narration: |
+    public フォルダに残っているサンプル画像も、消してしまって構いません。
+    片付けが済んだら、フォルダを先に作ります。
+    08章の詳細設計書で決めたディレクトリ構成を、中身が空のまま、先に用意しておく形です。
+
+- kind: punch
+  text: "先に器を作ると、迷いません。"
+  em: ["先に器を作る"]
+  sub: "「このファイル、どこに置こう」で毎回止まるのが、地味に効いてきます。"
+  narration: |
+    なぜわざわざ空で作るのか。迷わないためです。
+    ファイルを1つ作るたびに、これはどこに置こう、と考える。
+    一回は数秒ですが、これが地味に集中力を削ります。
+    置き場所が決まっていれば、考えずに置けます。
+
+# ============================================================ 問い③ 型
+
+- kind: agenda
+  heading: "最後の問い"
+  items:
+  - { text: "なぜ、この順番で作るのか？", state: "done", at: 0 }
+  - { text: "コマンド1つで出てきたものは、何なのか？", state: "done", at: 0 }
+  - { text: "なぜ、コードより先に「型」を書くのか？", state: "now", at: 0 }
+  reveal: false
+  narration: |
+    最後の問いです。なぜ、コードより先に、型を書くのか。
+
+- kind: punch
+  text: "設計書は、読み返すものではなく、\n先にコードへ写すもの。"
+  em: ["先にコードへ写すもの"]
+  narration: |
+    08章で、どんなデータを扱うかを決めました。
+    設計書は、後で読み返すものだと思われがちですが、そうではありません。
+    決めたデータの形は、いちばん最初にコードへ写します。
+
+- kind: code
+  heading: "lib/types.ts — まずジャンル"
+  caption: "lib/types.ts"
+  code: |
+    export const GENRES = [
+      "和食", "洋食", "中華", "イタリアン",
+      "韓国料理", "お弁当", "こだわりなし",
+    ] as const;
+
+    export type Genre = (typeof GENRES)[number];
+  reveal: false
+  narration: |
+    書くのは lib スラッシュ types.ts、1つのファイルです。
+    まずジャンル。7つを並べて、最後に as const と付けます。
+    05章でやったとおり、これで、この7つで固定、と宣言したことになります。
+    その下のGenreは、いま並べた7つから自動で作られる型です。増やすときは、上の配列に足すだけです。
+
+- kind: code
+  heading: "そして、レシピが2種類"
+  caption: "lib/types.ts"
+  code: |
+    export type Recipe = {
+      title: string;
+      cookingTime: string;
+      ingredients: string[];   // 配列
+      steps: string[];         // 配列
+    };
+
+    export type FavoriteRecipe = {
+      id: string;
+      title: string;
+      cooking_time: string;
+      ingredients: string;     // 文字列
+      steps: string;           // 文字列
+    };
+  reveal: false
+  narration: |
+    次がレシピです。ここで、よく見てください。
+    レシピを表す型が、2つあります。
+    上のRecipeは、AIが返してきて、画面に出すときの形。
+    下のFavoriteRecipeは、データベースに保存されている形です。
+    同じレシピなのに、型が2つある。これが、この設計の要です。
+
+- kind: verdict
+  heading: "同じレシピ。でも、形が違う"
+  sides:
+  - badge: "Recipe"
+    head: "材料は、配列"
+    desc: "AIも画面も、1つずつ扱いたい。\n名前は cookingTime(キャメルケース)。"
+    at: 1
+  - badge: "FavoriteRecipe"
+    head: "材料は、1本の文字列"
+    desc: "DBには改行区切りで、素直に入れる。\n名前は cooking_time(スネークケース)。"
+    tone: "accent"
+    at: 2
+  narration: |
+    違うのは、材料と手順の形です。
+    Recipeでは配列。AIも画面も、材料を1つずつ扱いたいからです。
+    FavoriteRecipeでは、1本の文字列。データベースには、改行で区切って素直に入れます。
+    名前の付け方も、わざと変えてあります。
+    データベースの形をそのまま持ってきた、と一目で分かるようにするためです。
+
+- kind: punch
+  text: "境界で、形が変わる。"
+  em: ["境界"]
+  sub: "変わる場所は、保存するときと、読み出すとき。join と split です。"
+  narration: |
+    覚えておいてほしいのは、この一言です。境界で、形が変わる。
+    配列を文字列にするのは保存するとき。文字列を配列に戻すのは、読み出すときです。
+    その変換場所を意識していると、Step 6 と Step 7 で迷いません。
+
+- kind: punch
+  text: "型を先に書くと、\nこの先ずっと、エディタが教えてくれる。"
+  em: ["エディタが教えてくれる"]
+  sub: "設計書を開き直さなくても、候補が出る。打ち間違えれば、その場で赤くなる。"
+  narration: |
+    これが、3つめの問いの答えです。
+    型を先に書いておくと、この先のコードで、エディタが候補を出してくれます。
+    設計書を開き直さなくても、次に何が書けるかを教えてくれる。
+    打ち間違えれば、その場で赤い線が出ます。
+
+# ============================================================ Git
+
+- kind: code
+  heading: "最後に、最初のコミット"
+  caption: "ターミナル"
+  code: |
+    git init
+    git add .
+    git commit -m "Next.jsプロジェクトの初期セットアップ"
+  reveal: false
+  narration: |
+    最後に、Gitで最初のコミットをします。
+    打ったあと、git status で node_modules が出てこないことを確認してください。
+    出てくるなら、さっきの .gitignore が効いていません。
+
+- kind: punch
+  text: "戻れる場所があることが、\n挑戦する勇気になる。"
+  em: ["挑戦する勇気"]
+  sub: "この教材では、各ステップの終わりに毎回コミットします。"
+  narration: |
+    この教材では、各ステップの終わりに毎回コミットします。
+    そこまでは動いていた、という場所に、いつでも戻れるようにしておくためです。
+    壊してもいい、と思えることが、そのまま、試してみる勇気になります。
+
+# ============================================================ 回収
+
+- kind: section
+  num: "答え合わせ"
+  heading: "今日書いたものは、どこに出てくるのか"
+  narration: |
+    最後に、冒頭のデモへ戻ります。
+
+- kind: demo
+  frames_dir: "demo/input"
+  narration: |
+    もう一度、ジャンルの欄を見てください。
+    並んでいる七つは、今日書いた文字列そのものです。
+
+- kind: punch
+  text: "設計は、もうコードになっている。"
+  em: ["もうコードになっている"]
+  sub: "画面はまだ文字2行。でも、そこに何が入るかは、今日決まりました。"
+  narration: |
+    画面はまだ、文字が2行出るだけです。
+    それでも、あのジャンルの一覧も、レシピという形も、今日書いたファイルの中にもうあります。
+    残りの章でやるのは、この形に中身を流し込んでいくことだけです。
+
+# ============================================================ まとめ
+
+- kind: agenda
+  heading: "3つの問いの、答え"
+  items:
+  - { text: "外側から作る。動く状態を切らさない", state: "done", at: 1 }
+  - { text: "設定は2つ、サンプルは全部消す。.gitignore は目で見る", state: "done", at: 2 }
+  - { text: "設計した形を先に型にすると、この先エディタが助けてくれる", state: "done", at: 3 }
+  narration: |
+    まとめです。
+    1つめ。外側から作る。動く状態を、切らさない。
+    2つめ。設定で見るのは2つだけ。サンプルは全部消す。.gitignore は毎回、目で確認する。
+    3つめ。設計した形を先に型にしておくと、この先ずっとエディタが助けてくれる。
+
+- kind: punch
+  text: "動く状態を、切らさない。"
+  em: ["切らさない"]
+  sub: "1つだけ持ち帰るなら、これです。"
+  narration: |
+    この章から1つだけ持ち帰るなら、これです。
+    動く状態を、切らさない。
+
+- kind: title
+  kicker: "次回 第10章"
+  heading: "Step 2 動かない画面を作る"
+  sub: "押しても何も起きない画面を、先に作る"
+  narration: |
+    次回はStep 2。動かない画面を作ります。
+    押しても何も起きない、見た目だけの画面です。
+    なぜ動かないものを先に作るのか。その答えを、次回やります。
+    ご視聴ありがとうございました。

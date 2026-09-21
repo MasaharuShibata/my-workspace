@@ -40,6 +40,15 @@ Chromium は次の順で探します。見つからない場合は `CHROME_PATH`
 2. `PLAYWRIGHT_BROWSERS_PATH`（既定 `/opt/pw-browsers`）配下
 3. `PATH` 上の `chromium` / `chromium-browser` / `google-chrome`
 
+⚠️ `scripts/capture-demo.mjs` はこの探索をせず、`CHROME_PATH` か playwright-core の
+既定パスしか見ません。既定パスは playwright-core の版に紐づくため、環境に入っている
+Chromium と食い違うと `Executable doesn't exist` で落ちます。撮影時は明示してください。
+
+```
+CHROME_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome \
+  node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes input
+```
+
 Noto Sans JP と Roboto Mono は、初回実行時に `.fonts/` へ自動で取得します。
 
 ### プロキシ環境での音声合成
@@ -199,6 +208,10 @@ Vercelのレート制限を誘発します。必ず `setup.sh` で作ったコ�
 
 どの章でどのシーンを使うかは `PROGRESS.md` の表で決めています。
 
+シーンによっては、前のシーンが残した画面の状態を持ち越します（`validation` が出した
+エラー文は、送信が通るまで消えません）。持ち越したくないシーンには `SCENES` の要素に
+`{ reset: true }` を付けます。撮影を始める前にアプリを読み直すので、コマには写りません。
+
 `out/demo/<シーン名>/0000.png ...` が出来るので、台本からはシーン名で指定します。
 
 ```yaml
@@ -224,6 +237,9 @@ Vercelのレート制限を誘発します。必ず `setup.sh` で作ったコ�
 細かい記法をいくつか。
 
 - 表のセル先頭の `*` は強調（オレンジの太字）、`~` は淡いグレーになります
+- 表は **5〜6行が上限**です。7行あたりから下端が切れ始めます（自動縮小は本文領域の
+  高さを基準にするため、表のような縦長の要素では効ききりません）。
+  行が増えるときは、まとめて行数を減らします（例: `1`〜`9` の9行 → `1 - 3` `4 - 5` … の4行）
 - `cards` と `callout` の `tone` に `bad` / `danger` を指定すると赤系、`good` で緑系になります
 - `flow` の `state` に `on` を指定すると強調、`dim` で背景に退きます。
   同じ手順を複数スライドに並べ、`on` の位置をずらすと、進行を追う演出になります
