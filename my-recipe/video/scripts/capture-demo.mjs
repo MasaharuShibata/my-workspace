@@ -16,7 +16,7 @@
 // 外部サービスを呼ぶ層だけスタブに差し替わっている。詳しくは video/README.md。
 
 import { chromium } from "playwright-core";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -157,13 +157,44 @@ const shellHtml = `<!doctype html>
 <\/script>
 </body></html>`;
 
+// ---------------------------------------------------------------- Chromium
+
+// playwright-core の既定は headless shell を見に行くが、この環境には入っていない
+// ことがある。build.py と同じ順で探して、見つかったものを使う。
+function findChrome() {
+  if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) {
+    return process.env.CHROME_PATH;
+  }
+  const root = process.env.PLAYWRIGHT_BROWSERS_PATH || "/opt/pw-browsers";
+  const stack = existsSync(root) ? [root] : [];
+  while (stack.length) {
+    const dir = stack.pop();
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      continue;
+    }
+    if (entries.includes("chrome") && dir.includes("chromium") && !dir.includes("headless")) {
+      return join(dir, "chrome");
+    }
+    for (const e of entries) {
+      const full = join(dir, e);
+      try {
+        if (statSync(full).isDirectory()) stack.push(full);
+      } catch { /* 読めないものは飛ばす */ }
+    }
+  }
+  return undefined;   // playwright-core の既定に任せる
+}
+
 // ---------------------------------------------------------------- 下ごしらえ
 
 mkdirSync(OUT, { recursive: true });
 writeFileSync(SHELL, shellHtml);
 
 const browser = await chromium.launch({
-  executablePath: process.env.CHROME_PATH || undefined,
+  executablePath: findChrome(),
   args: ["--no-sandbox", "--disable-gpu", "--font-render-hinting=none"],
 });
 const page = await browser.newPage({
