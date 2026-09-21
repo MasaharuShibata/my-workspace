@@ -252,10 +252,22 @@ async function endScene() {
   await s.end();
 }
 
+// アプリを読み直して、前のシーンが残した状態を消す。
+// validation のエラー文は送信が通るまで消えないため、input の頭で持ち越してしまう。
+// 撮影を始める前に済ませるので、コマには写らない。
+async function resetApp() {
+  await app.locator("html").evaluate((el) => el.ownerDocument.defaultView.location.reload());
+  await app.locator(".ingredient-form input").waitFor({ timeout: 30000 });
+  await applyZoom();   // zoom は html 要素に置いているので、読み直すと外れる
+  await wait(600);
+}
+
 // シーン1つぶんを包む。撮る/撮らないに関わらず中の操作は必ず走る。
-async function scene(name, cap, body) {
+// opts.reset を付けたシーンは、始める前にアプリを初期状態へ戻す。
+async function scene(name, cap, body, opts = {}) {
   const recording = !only.length || only.includes(name);
   console.log(`撮影: ${name}${recording ? "" : " (操作のみ)"}`);
+  if (opts.reset) await resetApp();
   if (cap && recording) await caption(String(++capNo), cap[0], cap[1]);
   startScene(name);
   await body();
@@ -294,7 +306,7 @@ const SCENES = [
     await wait(1600);
     await tapAt(app.locator(".ingredient-form button[type=submit]"));
     await wait(1600);
-  }],
+  }, { reset: true }],
 
   // 考案中。画面はほぼ静止する
   ["thinking", ["サーバーがAIに問い合わせる", "APIキーが使われるのは、この裏側だけ"], async () => {
@@ -388,8 +400,8 @@ await applyZoom();
 await setPath("/");
 await wait(500);
 
-for (const [name, cap, body] of SCENES) {
-  await scene(name, cap, body);
+for (const [name, cap, body, opts] of SCENES) {
+  await scene(name, cap, body, opts);
 }
 
 await browser.close();

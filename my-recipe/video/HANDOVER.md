@@ -18,7 +18,7 @@
 | 作り方のルール | `CLAUDE.md`「教材コンテンツ(音声版・動画版)を作るとき」 |
 | 進捗と次の一手 | `my-recipe/video/PROGRESS.md` |
 
-動画は **第1章だけ完成**(13分15秒)。02〜25章はこれから。
+動画は **第1章**(13分15秒)と **第9章**(13分35秒)が完成。残りはこれから。
 `tutorial/00_index.md` は索引なので動画化しない(内容は第1章の導入に入れた)。
 
 ---
@@ -89,6 +89,9 @@
   `<main> intercepts pointer events` で操作不能になる。アプリ文書側の `zoom` を使う
 - **`pkill -f "next dev"` のような雑なプロセス停止をしない**。自分のシェルまで巻き添えで
   落ちる。ポートから引くこと(`ss -lptn 'sport = :3000'`)
+- **`capture-demo.mjs` は `CHROME_PATH` を渡さないと落ちることがある**。playwright-core が
+  探しに行く既定のパス(`chromium_headless_shell-<版>`)と、環境に入っている Chromium の
+  版が一致しないため。`/opt/pw-browsers/chromium-*/chrome-linux/chrome` を指定する
 - **バックグラウンドで長いエンコードを走らせると、途中で切られることがある**。
   完了ログ(「完成」)を確認してから次へ進むこと
 - 音声合成はキャッシュされる(`out/<章>/s###.cues.json`)が、`out/` はGit管理外なので
