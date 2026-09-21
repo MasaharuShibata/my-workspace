@@ -93,6 +93,10 @@
   完了ログ(「完成」)を確認してから次へ進むこと
 - 音声合成はキャッシュされる(`out/<章>/s###.cues.json`)が、`out/` はGit管理外なので
   **セッションが変わると全スライド合成し直し**になる
+- **`capture-demo.mjs` が Chromium を見つけられずに落ちることがあった**(playwright-core の
+  既定が headless shell を見に行くが、この環境には入っていない)。第4章で、`build.py` と
+  同じように `PLAYWRIGHT_BROWSERS_PATH` 配下を探すようにしたので、いまは `CHROME_PATH` を
+  付けなくても動く
 
 ---
 
