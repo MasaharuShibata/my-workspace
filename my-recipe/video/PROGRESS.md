@@ -55,7 +55,7 @@ push しておけば、次のセッションが動画生成から再開できる
 |---|---|---|---|---|
 | 01 | Webアプリのしくみ | input,thinking,result,save,list | 完了 | 13分15秒 / 納品済 |
 | 02 | 開発環境を準備する | input,thinking,result | 未着手 | |
-| 03 | HTMLとCSS | input,result | 未着手 | |
+| 03 | HTMLとCSS | input,result | 完了 | 13分42秒 / 納品済 |
 | 04 | JavaScript | validation,thinking,result | 未着手 | 非同期処理の説明にthinkingを使う |
 | 05 | TypeScript | result,thinking | 未着手 | レシピの型の話にresultを使う |
 | 06 | React | input,result | 未着手 | チェックボックスがstateの実例 |
