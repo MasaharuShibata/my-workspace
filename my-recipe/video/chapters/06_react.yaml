@@ -1,0 +1,634 @@
+# my-recipe 開発教材 動画版 第6章
+# 原本: my-recipe/tutorial/06_react.md
+#
+# 原本の節順(6.1〜6.9)はなぞらず、3つの問いに組み替えている。
+#
+#   ① Reactは、何を楽にしてくれるのか   … 6.1
+#   ② 画面を、どう部品に分けるのか       … 6.2 / 6.3
+#   ③ 変わる値は、どこに置くのか         … 6.4 / 6.5 / 6.6 / 6.7 / 6.8
+#
+# 冒頭は「材料のチェックを押すと印が付く」を実機デモで見せ、
+# 「この書き換えを命令したコードはどこにあるのか」という問いを置く。
+# 終盤の「答え合わせ」で、そのチェック1つを裏側から辿り直して回収する。
+#
+# デモは input / result の2シーン(PROGRESS.md の割り当て)。
+#   node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes input,result
+
+title: "React"
+footer: "my-recipe 開発教材 #6"
+voice: "ja-JP-NanamiNeural"
+rate: "+6%"
+
+slides:
+
+# ============================================================ つかみ(デモ)
+
+- kind: punch
+  text: "文法の話に入る前に、\n完成した画面を少し動かします。"
+  sub: "この章で覚えることは、全部この画面の中にあります。"
+  narration: |
+    第6章はReactです。
+    文法の話に入る前に、完成した画面を少しだけ動かします。
+    この章で覚えることは、全部この画面の中に出てきます。
+
+- kind: demo
+  frames_dir: "demo/input"
+  narration: |
+    食材を打ち込むと、打った文字が入力欄に出ます。
+    当たり前に見えますが、これもReactの仕事です。
+
+- kind: demo
+  frames_dir: "demo/result"
+  narration: |
+    レシピが返ってきました。
+    材料の横のチェックを押すと、印が付きます。
+    押したのはチェックボックス1つ。
+    でも画面は、丸ごと作り直されています。
+
+- kind: punch
+  text: "文字が出る。チェックが付く。\nこの書き換えを命令したコードは、どこにある？"
+  em: ["どこにある？"]
+  sub: "答えは、どこにもありません。それがこの章の話です。"
+  narration: |
+    ここで1つ、問いを置きます。
+    入力欄に文字を出し、チェックに印を付ける。
+    その書き換えを命令しているコードは、どこにあるのか。
+    答えは、どこにもありません。
+
+- kind: section
+  num: "第6章"
+  heading: "画面を部品に分けて組み立てる"
+  narration: |
+    ここから本題です。第6章、React。画面を部品に分けて組み立てる回です。
+
+- kind: agenda
+  heading: "この章で答える、3つの問い"
+  items:
+  - "Reactは、何を楽にしてくれる？"
+  - "画面を、どう部品に分ける？"
+  - "変わる値は、どこに置く？"
+  narration: |
+    答える問いは3つです。
+    1つめ。Reactは、何を楽にしてくれるのか。
+    2つめ。画面を、どう部品に分けるのか。
+    3つめ。変わる値を、どこに置くのか。
+    この3つが分かれば、コンポーネンツ・フォルダの中身が読めるようになります。
+
+# ---------------------------------------------------------- 問い①
+
+- kind: agenda
+  heading: "まず1つめ"
+  items:
+  - { text: "Reactは、何を楽にしてくれる？", state: "now", at: 0 }
+  - { text: "画面を、どう部品に分ける？", at: 0 }
+  - { text: "変わる値は、どこに置く？", at: 0 }
+  reveal: false
+  narration: |
+    まず1つめ。Reactは、何を楽にしてくれるのか。
+
+- kind: code
+  heading: "Reactが無かった頃の、画面の書き換え"
+  caption: "素のJavaScript"
+  code: |
+    document.getElementById("result").innerHTML = "<h2>" + recipe.title + "</h2>";
+    document.getElementById("save-btn").disabled = true;
+    document.getElementById("error").style.display = "none";
+  reveal: false
+  narration: |
+    昔はこう書いていました。
+    結果の欄にレシピの題名を入れて、保存ボタンを押せなくして、エラー表示を消す。
+    データが変わるたびに、画面のどこをどう書き換えるかを、全部自分で指示します。
+
+- kind: punch
+  text: "機能が10個を超えると、\n必ず書き換え漏れが起きる。"
+  ng: ["必ず書き換え漏れが起きる"]
+  sub: "消し忘れたエラー表示。押せないままのボタン。"
+  narration: |
+    これは、機能が増えるほど破綻します。
+    10個を超えたあたりから、必ず書き換え漏れが起きる。
+    消し忘れたエラー表示。押せないままのボタン。
+    原因はいつも、指示の書き忘れです。
+
+- kind: verdict
+  heading: "Reactは、発想が逆"
+  sides:
+  - badge: "これまで"
+    head: "どう書き換えるか を書く"
+    desc: "データが変わったら、\n画面のどこを直すかを命令する。"
+    at: 1
+  - badge: "React"
+    tone: "ok"
+    head: "どう見えるか だけを書く"
+    desc: "データが変わったら、\nReactが画面を作り直す。"
+    at: 2
+  narration: |
+    Reactは、発想が逆です。
+    どう書き換えるか、ではない。
+    このデータのとき画面はこう見える、だけを書く。
+    あとは、データが変わったらReactが勝手に作り直します。
+
+- kind: code
+  heading: "「レシピがあれば、見出しを出す」"
+  caption: "app/page.tsx"
+  code: |
+    {recipe && <h2>{recipe.title}</h2>}
+  reveal: false
+  narration: |
+    書くのは、これだけです。
+    レシピがあれば、見出しを出す。
+    そう書いておけば、レシピが入った瞬間に表示され、消えた瞬間に消えます。
+
+- kind: punch
+  text: "書き換えの指示を、書かなくていい。"
+  em: ["書かなくていい"]
+  sub: "これがReactの本質です。残りは全部、この応用でしかありません。"
+  narration: |
+    書き換えの指示を、書かなくていい。
+    これがReactの本質で、残りの話は全部この応用でしかありません。
+
+# ---------------------------------------------------------- 問い②
+
+- kind: agenda
+  heading: "2つめの問い"
+  items:
+  - { text: "Reactは、何を楽にしてくれる？", state: "done", at: 0 }
+  - { text: "画面を、どう部品に分ける？", state: "now", at: 0 }
+  - { text: "変わる値は、どこに置く？", at: 0 }
+  reveal: false
+  narration: |
+    2つめへ行きます。画面を、どう部品に分けるのか。
+
+- kind: punch
+  text: "コンポーネントは、\nHTMLを返す関数。"
+  em: ["HTMLを返す関数"]
+  sub: "それ以上でも、以下でもありません。"
+  narration: |
+    Reactの部品を、コンポーネントと呼びます。
+    正体は、エイチティーエムエルを返す関数です。
+    それ以上でも、以下でもありません。
+
+- kind: code
+  heading: "my-recipeのヘッダー"
+  caption: "components/Header.tsx"
+  code: |
+    function Header() {
+      return (
+        <header className="site-header">
+          <a href="/">my-recipe</a>
+        </header>
+      );
+    }
+  reveal: false
+  narration: |
+    これが実物です。関数の中で、見た目をそのまま返しているだけ。
+    守るルールは3つあります。
+
+- kind: flow
+  heading: "コンポーネントのルールは、3つだけ"
+  steps:
+  - { who: "1", text: "関数名は大文字で始める。小文字だとHTMLタグ扱いされる" }
+  - { who: "2", text: "HTMLのようなもの(JSX)を return する" }
+  - { who: "3", text: "使うときは、タグのように書く … <Header />" }
+  narration: |
+    1つ、関数名は大文字で始める。
+    小文字だと、ただのタグと見なされてしまいます。
+    2つ、ジェイエスエックスと呼ばれる、エイチティーエムエルのようなものを返す。
+    3つ、使うときはタグのように書く。これだけです。
+
+- kind: code
+  heading: "部品を組み合わせると、画面になる"
+  caption: "app/page.tsx"
+  code: |
+    <>
+      <Header />
+      <main className="page">
+        <div className="page-intro"> ... </div>
+        <IngredientForm ... />
+        {recipe && <RecipeResult ... />}
+      </main>
+    </>
+  reveal: false
+  narration: |
+    そして、組み合わせるとこうなります。
+    ヘッダーがあって、食材のフォームがあって、レシピがあれば結果が出る。
+    画面の構造が、そのまま読めます。
+    これを1つのファイルに全部書くと、300行の壁になる。
+    直したい場所を探すだけで、時間が溶けます。
+
+- kind: punch
+  text: "JSXは、HTMLではない。"
+  em: ["HTMLではない"]
+  sub: "JavaScriptの式です。ここを勘違いすると、必ず詰まります。"
+  narration: |
+    いま出てきたジェイエスエックス。
+    エイチティーエムエルに見えますが、これはエイチティーエムエルではありません。
+    ジャバスクリプトの式です。
+    だから、似ているのに違うところが5つあります。
+
+- kind: table
+  heading: "HTMLとの違いは、5つだけ"
+  head: ["#", "HTML", "JSX"]
+  rows:
+  - ["1", "class=\"card\"", "*className=\"card\""]
+  - ["2", "for=\"id\"", "*htmlFor=\"id\""]
+  - ["3", "onclick=\"...\"", "*onClick={ ... }"]
+  - ["4", "<br>", "*<br />"]
+  - ["5", "要素を並べて置ける", "*1つに包む必要がある"]
+  narration: |
+    クラスは、クラスネーム。
+    フォーは、エイチティーエムエル・フォー。
+    どちらもジャバスクリプトの予約語なので、名前を変えてあります。
+    イベント名は、オンクリックのように途中を大文字にする。
+    閉じないタグにも、スラッシュが要る。
+    そして5つめ。返す要素は、必ず1つにまとめること。
+    関数は、1つしか返せないからです。
+
+- kind: code
+  heading: "5番の対処法 — フラグメント"
+  caption: "名前のない、空のタグで包む"
+  code: |
+    return (
+      <>
+        <Header />
+        <main>...</main>
+      </>
+    );
+  reveal: false
+  narration: |
+    まとめ方は簡単で、名前のない空のタグで包みます。
+    フラグメントと呼びます。
+    余計な入れ物を増やさずに、束ねるだけの記法です。
+    さっきのホーム画面も、これで始まっていました。
+
+- kind: code
+  heading: "{ } の中だけ、JavaScriptに戻る"
+  code: |
+    <h2>{recipe.title}</h2>
+    <p>調理時間: {recipe.cookingTime}</p>
+    <button disabled={generating}>保存</button>
+  reveal: false
+  narration: |
+    波かっこで囲むと、その中だけジャバスクリプトに戻ります。
+    変数を表示したり、属性に値を渡したり。
+    かっこの外はエイチティーエムエルの世界、中はジャバスクリプトの世界。
+    この2つを行き来しているのが、ジェイエスエックスです。
+    ただし、中に書けるのは値になるものだけ。イフ文はそのまま書けません。
+
+- kind: code
+  heading: "だから、条件はこう書く"
+  code: |
+    {error && <p className="form-error">{error}</p>}
+
+    {generating ? "考案中..." : "レシピを考えてもらう"}
+
+    if (favorites.length === 0) {
+      return <p>まだお気に入りがありません。</p>;
+    }
+  reveal: false
+  narration: |
+    そこで、3つの書き方を使います。
+    上は、あれば出す。エラーがあるときだけ、赤い文字が出ます。
+    真ん中は、AかBか。考案中かどうかで、ボタンの文字を出し分けています。
+    下は、早期リターン。0件ならコンポーネントごと別のものを返してしまう。
+    条件が込み入ってきたら、これがいちばん読めます。
+
+- kind: code
+  heading: "リストは map と key"
+  caption: "配列 → JSXの配列"
+  code: |
+    <ul>
+      {recipe.ingredients.map((item, i) => (
+        <li key={i}>{item}</li>
+      ))}
+    </ul>
+  reveal: false
+  narration: |
+    並べるときは、04章でやったマップを使います。
+    配列をジェイエスエックスの配列に変えると、Reactが並べてくれます。
+    1つだけ約束があって、キーを必ず付けること。
+    どの要素がどれかを、Reactが見分けるための札です。
+    一意な番号があるならそれを使う。
+    並べ替えも削除もしないなら、何番目かをそのまま使って構いません。
+
+# ---------------------------------------------------------- 問い③
+
+- kind: agenda
+  heading: "最後の問い"
+  items:
+  - { text: "Reactは、何を楽にしてくれる？", state: "done", at: 0 }
+  - { text: "画面を、どう部品に分ける？", state: "done", at: 0 }
+  - { text: "変わる値は、どこに置く？", state: "now", at: 0 }
+  reveal: false
+  narration: |
+    最後の問いです。変わる値は、どこに置くのか。
+
+- kind: verdict
+  heading: "コンポーネントが扱う値は、2種類しかない"
+  sides:
+  - badge: "props"
+    head: "親からもらう値"
+    desc: "受け取って表示するだけ。\n子が書き換えてはいけない。"
+    at: 1
+  - badge: "state"
+    tone: "ok"
+    head: "自分が持つ、変わる値"
+    desc: "この値が変わると、\n画面が作り直される。"
+    at: 2
+  narration: |
+    コンポーネントが扱う値は、2種類しかありません。
+    親からもらう値を、プロップスと呼びます。
+    受け取って表示するだけで、子が書き換えてはいけません。
+    もう1つが、自分が持っている、変わる値。これがステートです。
+
+- kind: code
+  heading: "props — 親から子へ渡す"
+  code: |
+    // 親が渡す
+    <FavoriteCard favorite={favorite} />
+
+    // 子が受け取る
+    function FavoriteCard({ favorite }) {
+      return <h3>{favorite.title}</h3>;
+    }
+  reveal: false
+  narration: |
+    プロップスは、タグの属性のように渡します。
+    受け取る側は、波かっこで名前を書いて取り出す。
+    04章でやった分割代入です。
+
+- kind: diagram
+  heading: "データは、上から下にしか流れない"
+  nodes:
+  - { t: "node", title: "app/page.tsx (親)", sub: "recipe というデータを持っている", tone: "accent" }
+  - { t: "arrow", label: "props で渡す" }
+  - { t: "node", title: "RecipeResult (子)", sub: "受け取って表示するだけ。書き換えてはいけない" }
+  narration: |
+    そしてデータは、上から下にしか流れません。
+    単方向データフローと呼びます。
+    子が勝手に親の値を書き換えられないので、
+    誰がこの値を変えたのか、を追いかけられます。
+
+- kind: code
+  heading: "では、子から親に伝えるには？"
+  caption: "関数を渡して、呼んでもらう"
+  code: |
+    // 親: 「食材が確定したら、この関数を呼んでね」
+    <IngredientForm onSubmit={(ing, g) => generate(ing, g)} />
+
+    // 子: 送信されたら、もらった関数を呼ぶ
+    function handleSubmit(e) {
+      e.preventDefault();
+      onSubmit(ingredients, genre);
+    }
+  reveal: false
+  narration: |
+    では、子から親に何か伝えたいときは。
+    関数を渡します。
+    親は、食材が決まったらこれを呼んでね、と関数を渡しておく。
+    子は、送信されたら、もらった関数を呼ぶだけです。
+
+- kind: punch
+  text: "データはpropsで下へ、\n出来事は関数で上へ。"
+  em: ["下へ", "上へ"]
+  sub: "初心者がいちばん混乱するところですが、覚えてしまえば決まり文句です。"
+  narration: |
+    言葉にすると、これだけです。
+    データはプロップスで下へ、出来事は関数で上へ。
+    ここは初心者がいちばん混乱するところですが、決まり文句として覚えてしまって構いません。
+
+- kind: code
+  heading: "state — useStateの3点セット"
+  caption: "components/IngredientForm.tsx"
+  code: |
+    const [input, setInput] = useState("");
+    //     現在の値  変更する関数      初期値
+  reveal: false
+  narration: |
+    ステートは、ユーズステートで作ります。
+    返ってくるのは2つ。いまの値と、それを変える関数です。
+    かっこの中が初期値。入力欄の文字を持っているのが、これです。
+
+- kind: verdict
+  heading: "なぜ、普通の変数ではダメなのか"
+  sides:
+  - badge: "✕"
+    tone: "ng"
+    head: "let input = \"鶏むね肉\""
+    desc: "値は変わる。でもReactは知らない。\n画面は古いまま。"
+    at: 1
+  - badge: "○"
+    tone: "ok"
+    head: "setInput(\"鶏むね肉\")"
+    desc: "Reactが「作り直しが要る」と\n気づく。"
+    at: 2
+  narration: |
+    ここで、普通の変数ではだめなのか、という疑問が出ます。だめです。
+    普通の変数を書き換えても、値は変わりますが、Reactはそれを知りません。画面は古いままです。
+    Reactは、セットで始まる関数が呼ばれたときだけ、画面を作り直す必要があると気づきます。
+
+- kind: punch
+  text: "コンポーネント関数は、stateが変わるたびに\n何度も実行される。"
+  em: ["何度も実行される"]
+  sub: "Reactのいちばん変なところ。慣れるまでは、気持ち悪いはずです。"
+  narration: |
+    ここがReactの、いちばん変なところです。
+    関数は一度動いて終わるもの、と思っていると必ず混乱します。
+    ステートが変わる、関数が再実行される、新しい画面ができる。
+    このループだと覚えてください。
+
+- kind: table
+  heading: "my-recipeで使われているstate"
+  head: ["ファイル", "state", "何を表すか"]
+  rows:
+  - ["app/page.tsx", "recipe", "*いま表示しているレシピ"]
+  - ["", "generating", "AIが考え中かどうか"]
+  - ["IngredientForm", "input / genre", "入力欄の文字と、選んだジャンル"]
+  - ["RecipeResult", "checked", "*材料のチェック状態"]
+  - ["FavoriteCard", "open", "カードが開いているか"]
+  narration: |
+    実物を並べます。
+    いま表示しているレシピ。AIが考え中かどうか。
+    入力欄の文字と、選んだジャンル。材料のチェック状態。カードが開いているか。
+    こうして見ると分かりますが、画面の見た目を変えるものが、ステートになります。
+
+- kind: code
+  heading: "stateの鉄則 — 必ず新しい値を作る"
+  code: |
+    // ✕ 元の配列を書き換えている → 画面が更新されない
+    checked[0] = true;
+    setChecked(checked);
+
+    // ○ 新しい配列を作る
+    setChecked(checked.map((v, i) => (i === 0 ? !v : v)));
+  reveal: false
+  narration: |
+    もう1つ、鉄則があります。ステートは、必ず新しい値を作って渡すこと。
+    上は、元の配列の中身を書き換えてから渡しています。これでは画面が変わりません。
+    Reactは、同じものか別のものか、だけを見ているからです。
+    中身をいじっても、同じ配列なら、変わっていないと判断されます。
+
+- kind: code
+  heading: "チェックを1つだけ反転させる"
+  caption: "components/RecipeResult.tsx"
+  code: |
+    function toggleChecked(i: number) {
+      setChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
+    }
+  reveal: false
+  narration: |
+    実物がこれです。
+    読み方は、いまのチェック状態を全部見て、押された番号だけ反転させた、新しい配列を作る。
+    関数を渡す形にしているのは、いまの値をもとに次を決めるときの、安全な書き方だからです。
+
+- kind: table
+  heading: "イベントで必ず踏む、2つの罠"
+  head: ["書き方", "何が起きるか"]
+  rows:
+  - ["onClick={handleSave()}", "*押される前に実行され、戻り値が渡る"]
+  - ["onClick={handleSave}", "~これが正しい。押されたら呼ばれる"]
+  - ["e.preventDefault() を忘れる", "*送信でページが再読み込みされ、画面が戻る"]
+  narration: |
+    ここで、必ず踏む罠を2つ。
+    1つめ。オンクリックに、かっこを付けて書いてはいけません。
+    それは、いますぐ実行して戻り値を渡す、という意味になります。渡すのは関数そのものです。
+    2つめ。フォームの送信では、プリベント・デフォルトを呼ぶこと。
+    忘れると、画面が一瞬で元に戻ります。
+
+- kind: code
+  heading: "入力欄とstateを、常に一致させる"
+  caption: "制御されたコンポーネント"
+  code: |
+    <input value={input} onChange={(e) => setInput(e.target.value)} />
+  reveal: false
+  narration: |
+    冒頭のデモで、打った文字がそのまま出ていた入力欄。正体はこれです。
+    表示する値はステートから来て、打つたびにステートを更新する。
+    この2つをセットにすると、入力欄の中身とステートが常に一致します。
+    入力値を取り出す、という作業がそもそも要らなくなります。
+
+# ---------------------------------------------------------- 置き場所
+
+- kind: punch
+  text: "実務でいちばん頭を使うのは、\nそのstateを「どこに置くか」。"
+  em: ["どこに置くか"]
+  narration: |
+    ステートの作り方は、ここまでで分かりました。
+    実務でいちばん頭を使うのは、そのステートをどのコンポーネントに置くか、です。
+
+- kind: verdict
+  heading: "my-recipeの悩み"
+  sides:
+  - badge: "IngredientForm"
+    head: "「レシピを考えてもらう」"
+    desc: "食材を入れて、最初の1回。"
+    at: 1
+  - badge: "RecipeResult"
+    head: "「別のレシピを提案してもらう」"
+    desc: "同じ生成処理を、もう一度。"
+    at: 2
+  narration: |
+    my-recipeでは、こういう悩みがありました。
+    レシピを考えてもらうボタンは、食材フォームの中にあります。
+    別のレシピを提案してもらうボタンは、結果の表示の中にあります。
+    呼びたい処理は、どちらも同じです。
+
+- kind: diagram
+  heading: "共通の親まで、持ち上げる"
+  nodes:
+  - { t: "node", title: "app/page.tsx", sub: "recipe・generating と、generate関数を持つ", tone: "accent" }
+  - { t: "arrow", label: "props で関数を渡す" }
+  - { t: "row", items: [
+      { t: "node", title: "IngredientForm", sub: "onSubmit で親を呼ぶ" },
+      { t: "node", title: "RecipeResult", sub: "onRegenerate で親を呼ぶ" }] }
+  narration: |
+    兄弟同士は、直接やりとりできません。
+    そこで、共通の親であるページ側に、生成処理とレシピのステートを置きました。
+    子は、もらった関数を呼ぶだけ。
+    これをリフトアップ、ステートの持ち上げと呼びます。
+
+- kind: verdict
+  heading: "判断基準は、1つだけ"
+  sides:
+  - badge: "2つ以上が必要とする"
+    tone: "ok"
+    head: "共通の親へ置く"
+    desc: "レシピ。生成中かどうか。"
+    at: 1
+  - badge: "1つしか使わない"
+    head: "自分で持つ"
+    desc: "カードが開いているか。\n親に置くと、カードの数だけ\n配列で管理する羽目になる。"
+    at: 2
+  narration: |
+    ただし、なんでも親に置けばいい訳ではありません。
+    基準は1つ。その値を、2つ以上のコンポーネントが必要とするか。
+    必要とするなら共通の親へ。1つだけなら、自分で持つ。
+    カードが開いているかどうかは、そのカードだけの話です。
+
+# ============================================================ デモの回収
+
+- kind: section
+  num: "答え合わせ"
+  heading: "最初のデモで、何が起きていたのか"
+  narration: |
+    ここまでの話を持って、最初のデモに戻ります。
+
+- kind: flow
+  heading: "材料のチェックを、1つ押したとき"
+  steps:
+  - { who: "画面", text: "チェックボックスが押される" }
+  - { who: "子", text: "onChange から toggleChecked が呼ばれる" }
+  - { who: "子", text: "反転させた新しい配列を setChecked に渡す" }
+  - { who: "React", text: "前と別の配列だ、と気づく" }
+  - { who: "React", text: "RecipeResult の関数を、もう一度実行する" }
+  - { who: "画面", text: "新しいチェック状態で、描き直される" }
+  narration: |
+    押されるのは、チェックボックス1つ。
+    そこからトグル・チェックトが呼ばれ、反転させた新しい配列がセット・チェックトに渡ります。
+    Reactが、前とは別の配列だと気づく。
+    結果の表示が、頭からもう一度実行される。
+    そして画面が、新しいチェック状態で描き直されます。
+
+- kind: punch
+  text: "あなたが書いたのは、\n「こう見える」だけ。"
+  em: ["「こう見える」だけ"]
+  sub: "チェックを付けて回る処理は、1行も書いていません。"
+  narration: |
+    冒頭の問いに戻ります。
+    その書き換えを命令したコードは、どこにあるのか。どこにもありません。
+    書いたのは、このステートのとき画面はこう見える、だけ。
+    書き換えたのは、Reactです。
+
+# ============================================================ まとめ
+
+- kind: agenda
+  heading: "3つの問いの、答え"
+  items:
+  - { text: "「こう見える」だけを書く。書き換えはReactの仕事", state: "done", at: 1 }
+  - { text: "部品はJSXを返す関数。propsで下へ、関数で上へ", state: "done", at: 2 }
+  - { text: "変わる値はstate。必要とする人たちの共通の親に置く", state: "done", at: 3 }
+  narration: |
+    まとめます。
+    1つめ。こう見える、だけを書けばいい。書き換えはReactの仕事。
+    2つめ。部品はジェイエスエックスを返す関数。データはプロップスで下へ、出来事は関数で上へ。
+    3つめ。変わる値はステート。必要とする人たちの、共通の親に置く。
+
+- kind: punch
+  text: "stateが変わる → 関数が再実行 → 新しい画面。"
+  em: ["新しい画面"]
+  sub: "1つだけ持ち帰るなら、このループです。"
+  narration: |
+    この章から1つだけ持ち帰るなら、このループです。
+    ステートが変わる、関数が再実行される、新しい画面ができる。
+    ここが腑に落ちれば、Reactのコードは読めるようになります。
+
+- kind: title
+  kicker: "次回 第7章"
+  heading: "Next.js"
+  sub: "ページの作り方と、サーバーで動くコード"
+  narration: |
+    次回は第7章、ネクスト・ジェイエスです。
+    今回のReactを、どうやってページとして届けるのか。
+    そして、ブラウザではなくサーバーで動くコードの話に入ります。
+    お気に入りを削除したとき、なぜ自分でカードを消す処理を書かなくていいのか。
+    その答えも、次回です。
+    ご視聴ありがとうございました。
