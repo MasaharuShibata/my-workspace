@@ -54,7 +54,7 @@ push しておけば、次のセッションが動画生成から再開できる
 | 章 | 題 | 使うデモ | 状態 | 備考 |
 |---|---|---|---|---|
 | 01 | Webアプリのしくみ | input,thinking,result,save,list | 完了 | 13分15秒 / 納品済 |
-| 02 | 開発環境を準備する | input,thinking,result | 未着手 | |
+| 02 | 開発環境を準備する | input,thinking,result | 完了 | 14分49秒 / 納品済 |
 | 03 | HTMLとCSS | input,result | 未着手 | |
 | 04 | JavaScript | validation,thinking,result | 未着手 | 非同期処理の説明にthinkingを使う |
 | 05 | TypeScript | result,thinking | 未着手 | レシピの型の話にresultを使う |
