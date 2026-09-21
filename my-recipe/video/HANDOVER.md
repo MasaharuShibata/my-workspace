@@ -84,6 +84,12 @@
   先頭の証明書だけ見ると必ず「入っている」と誤判定する
 - **Playwright同梱のffmpegは使えない**(VP8のみ・音声非対応)。
   `npm install` で入る `ffmpeg-static` を使う
+- **撮影(`capture-demo.mjs`)は `CHROME_PATH` を渡して起動する**。`playwright-core` の版と
+  `/opt/pw-browsers` に入っているブラウザの版がずれていることがあり、そのままだと
+  「Executable doesn't exist ... chrome-headless-shell」で落ちる(`npx playwright install`
+  を促されるが、実行する必要はない)。実体は `/opt/pw-browsers/chromium-*/chrome-linux/chrome`。
+  `CHROME_PATH=$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome | head -1) node scripts/capture-demo.mjs ...`
+  で通る。`build.py` は自分で探しに行くので、こちらは指定不要
 - **日本語の音声は `WordBoundary` を返さない**。`SentenceBoundary` を使う
 - **デモの拡大に `transform: scale()` を使わない**。Playwrightのクリック位置計算がずれて
   `<main> intercepts pointer events` で操作不能になる。アプリ文書側の `zoom` を使う
