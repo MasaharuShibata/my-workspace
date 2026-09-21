@@ -16,7 +16,7 @@
 // 外部サービスを呼ぶ層だけスタブに差し替わっている。詳しくは video/README.md。
 
 import { chromium } from "playwright-core";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -162,8 +162,38 @@ const shellHtml = `<!doctype html>
 mkdirSync(OUT, { recursive: true });
 writeFileSync(SHELL, shellHtml);
 
+// Chromium の場所。build.py の find_chrome() と同じ順で探す。
+// playwright-core 任せにすると、同梱版と実際に入っているビルドの番号がずれたときに
+// 「Executable doesn't exist」で止まるため、自分で解決しておく。
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const root = process.env.PLAYWRIGHT_BROWSERS_PATH || "/opt/pw-browsers";
+  const walk = (dir, depth = 0) => {
+    if (depth > 3) return undefined;
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return undefined;
+    }
+    if (entries.includes("chrome") && dir.includes("chrome-linux")) return join(dir, "chrome");
+    for (const e of entries) {
+      const p = join(dir, e);
+      try {
+        if (!statSync(p).isDirectory()) continue;
+      } catch {
+        continue;
+      }
+      const hit = walk(p, depth + 1);
+      if (hit) return hit;
+    }
+    return undefined;
+  };
+  return walk(root);
+}
+
 const browser = await chromium.launch({
-  executablePath: process.env.CHROME_PATH || undefined,
+  executablePath: findChrome(),
   args: ["--no-sandbox", "--disable-gpu", "--font-render-hinting=none"],
 });
 const page = await browser.newPage({

@@ -1,0 +1,616 @@
+# my-recipe 開発教材 動画版 第7章
+# 原本: my-recipe/tutorial/07_nextjs.md
+#
+# 第7章は Part 1(言語と道具の基礎)の最終章。
+# 原本の節をなぞらず、「この章で答える3つの問い」に組み替えている。
+#
+#   ① どのファイルが、どのURLになる？   … App Router / page・layout・route / Link
+#   ② そのコードは、どこで動いている？   … サーバー/クライアントコンポーネント
+#   ③ サーバー側の処理は、どう書く？     … Route Handler / Server Actions
+#
+# そのうえで、最後に「秘密はどこに置くのか」(環境変数)を置いた。
+# ここは第1章「秘密はサーバーに置く」の回収であり、この章の持ち帰りでもある。
+#
+# 冒頭は thinking のデモで始め、終盤の環境変数の節で同じ数秒を言い直して回収する。
+# デモは thinking(①) → list(②) の順。撮影時の採番と並び順を合わせてある。
+#
+#   node scripts/capture-demo.mjs out/demo http://localhost:3000 --scenes thinking,list
+#
+# デモのナレーションは撮影の尺に合わせること(thinking 3.4秒 / list 20.3秒)。
+# thinking はほぼ静止画なので2倍まで、list は1.2倍までに収めている。
+#
+# コードのスライドは、実際の my-recipe のコードから削って作っている(創作しない)。
+
+title: "Next.js"
+footer: "my-recipe 開発教材 #7"
+voice: "ja-JP-NanamiNeural"
+rate: "+6%"
+
+slides:
+
+# ============================================================ 導入
+
+- kind: punch
+  text: "Part 1、最後の道具です。"
+  em: ["最後の道具"]
+  sub: "Reactで画面は作れました。でも、これだけではアプリになりません。"
+  narration: |
+    Part 1、最後の道具です。
+    前の章で、Reactを使って画面を組み立てられるようになりました。
+    ただ、これだけではアプリになりません。
+
+- kind: demo
+  frames_dir: "demo/thinking"
+  narration: |
+    この数秒。
+    動いているコードは、あなたのパソコンの中にはありません。
+
+- kind: punch
+  text: "Reactは、画面を作る道具でしかない。"
+  em: ["画面を作る道具でしかない"]
+  narration: |
+    この待ち時間の向こう側、つまりサーバーで動く処理は、Reactでは書けません。
+    Reactは、画面を作る道具でしかないからです。
+
+- kind: cards
+  heading: "Reactだけでは、足りないもの"
+  cards:
+  - label: "1"
+    title: "ページを分ける仕組み"
+    text: "トップページと、お気に入りページ。\n2つの画面を出し分けられない。"
+  - label: "2"
+    title: "サーバー側の処理"
+    text: "APIキーを隠しておける場所が、\nどこにも無い。"
+  - label: "3"
+    title: "公開するための準備"
+    text: "まとめ方も、最適化も、\n全部が自分の仕事になる。"
+  narration: |
+    足りないものが3つあります。
+    ページを分ける仕組みが無い。トップページとお気に入りページを、出し分けられません。
+    サーバー側の処理が書けない。APIキーを隠す場所が、どこにも無いということです。
+    そして、公開するための準備が、全部自分の仕事になります。
+
+- kind: punch
+  text: "Reactに、足りないものを\n全部足したもの。"
+  em: ["全部足したもの"]
+  sub: "それがNext.jsです。こういう「一式そろった道具箱」をフレームワークと呼びます。"
+  narration: |
+    そこを全部まとめて面倒を見てくれるのが、Next.jsです。
+    こういう一式そろった道具箱を、フレームワークと呼びます。
+
+- kind: code
+  heading: "1つのプロジェクトに、画面とサーバーが同居する"
+  caption: "my-recipe のフォルダ"
+  code: |
+    my-recipe/
+    ├─ app/page.tsx                      ← ブラウザで動く画面
+    ├─ app/api/generate-recipe/route.ts  ← サーバーで動く処理(APIキーを使う)
+    └─ app/actions.ts                    ← サーバーで動く処理(データベースを触る)
+  reveal: false
+  narration: |
+    そして、ここが効きます。
+    1つのプロジェクトの中に、ブラウザで動く画面と、サーバーで動く処理が同居します。
+    別々のプロジェクトを、2つ管理しなくていい。
+    基本設計書に、構成をシンプルにできる、と書いてあるのはこれのことです。
+
+- kind: agenda
+  heading: "この章で答える、3つの問い"
+  items:
+  - "どのファイルが、どのURLになる？"
+  - "そのコードは、どこで動いている？"
+  - "サーバー側の処理は、どう書く？"
+  narration: |
+    答える問いは3つです。
+    どのファイルが、どのURLになるのか。
+    そのコードは、どこで動いているのか。
+    サーバー側の処理は、どう書くのか。
+    この章を終えると、これから書くファイルの置き場所が、全部説明できるようになります。
+
+# ---------------------------------------------------------- 問い①
+
+- kind: agenda
+  heading: "まず1つめ"
+  items:
+  - { text: "どのファイルが、どのURLになる？", state: "now", at: 0 }
+  - { text: "そのコードは、どこで動いている？", at: 0 }
+  - { text: "サーバー側の処理は、どう書く？", at: 0 }
+  reveal: false
+  narration: |
+    まず1つめ。どのファイルが、どのURLになるのか。
+
+- kind: punch
+  text: "ルーティングの設定ファイルは、\nありません。"
+  em: ["ありません"]
+  sub: "フォルダを作れば、そのURLができます。"
+  narration: |
+    どのURLでどの画面を出すか。それを書く設定ファイルは、ありません。
+    フォルダを作れば、そのURLができます。
+
+- kind: table
+  heading: "置き場所が、そのままURL"
+  head: ["ファイル", "できるURL"]
+  rows:
+  - ["app/page.tsx", "*/"]
+  - ["app/favorites/page.tsx", "*/favorites"]
+  - ["app/about/page.tsx", "*/about"]
+  - ["app/api/generate-recipe/route.ts", "*/api/generate-recipe"]
+  narration: |
+    アプリの直下に置けば、トップページ。
+    フェイバリッツというフォルダを作れば、スラッシュ・フェイバリッツ。
+    フォルダの名前が、そのままURLになります。
+    一番下だけは画面ではなくAPIですが、考え方は同じです。
+
+- kind: cards
+  heading: "名前が決まっているファイル"
+  cards:
+  - label: "画面"
+    title: "page.tsx"
+    text: "そのURLの、画面本体。"
+  - label: "枠"
+    title: "layout.tsx"
+    text: "配下のページ全部を包む、\n共通の枠。"
+  - label: "API"
+    title: "route.ts"
+    text: "画面ではなく、\nJSONを返す窓口。"
+  narration: |
+    フォルダの中に置くファイルは、名前が決まっています。
+    ページ・ティー・エス・エックスが、そのURLの画面本体。
+    レイアウト・ティー・エス・エックスが、配下を全部包む共通の枠。
+    ルート・ティー・エスが、JSONを返すAPIの窓口です。
+
+- kind: callout
+  tone: "danger"
+  title: "名前を間違えると、画面になりません"
+  text: |
+    page.tsx でないとダメ。
+    Page.tsx も index.tsx も、ただのファイルとして無視される。
+  narration: |
+    ここは間違えやすいところです。
+    大文字で始めても、インデックスという名前にしても、画面にはなりません。
+    エラーも出ず、ただ何も起きない。だから気づきにくいんです。
+
+- kind: split
+  heading: "layout は、全ページを包む外枠"
+  diagram:
+  - { t: node, title: "app/layout.tsx", sub: "html と body は、ここにしか書かない" }
+  - { t: arrow, label: "children に差し込まれる" }
+  - { t: node, title: "各ページの page.tsx", sub: "その画面の中身", tone: "accent" }
+  big: "外枠は、1回書けばいい"
+  small: "my-recipe では、日本語フォントの読み込みと、\nページのタイトル・説明文を、ここで設定している。"
+  narration: |
+    レイアウトは、全ページの一番外側です。
+    チルドレンと書いたところに、それぞれのページの中身が差し込まれます。
+    my-recipeでは、日本語フォントと、ページのタイトルを、ここで設定しています。
+
+- kind: verdict
+  heading: "ページを移るときは、Link を使う"
+  sides:
+  - badge: "✕"
+    tone: "ng"
+    head: "a href"
+    desc: "ページ全体を読み込み直す。\n一瞬、画面が白くなる。"
+    at: 1
+  - badge: "○"
+    tone: "ok"
+    head: "Link"
+    desc: "変わる部分だけを差し替える。\n速いし、ちらつかない。"
+    at: 2
+  narration: |
+    画面から画面へ移るときにも、作法があります。
+    普通のリンク、エー・タグでも動きます。動きますが、ページ全体を読み込み直します。
+    Next.jsのリンクなら、変わる部分だけを差し替えます。速いですし、画面が白くなりません。
+
+# ---------------------------------------------------------- 問い②
+
+- kind: agenda
+  heading: "ここがこの章の山場"
+  items:
+  - { text: "どのファイルが、どのURLになる？", state: "done", at: 0 }
+  - { text: "そのコードは、どこで動いている？", state: "now", at: 0 }
+  - { text: "サーバー側の処理は、どう書く？", at: 0 }
+  reveal: false
+  narration: |
+    2つめ。ここがこの章の山場です。
+    そのコードは、どこで動いているのか。
+
+- kind: punch
+  text: "同じように見えるファイルが、\n違う場所で動いています。"
+  em: ["違う場所で動いています"]
+  sub: "Next.jsで一番混乱するのが、ここです。"
+  narration: |
+    見た目はどちらも、Reactのコンポーネントです。
+    ところが片方はサーバーで動き、もう片方はブラウザで動いています。
+
+- kind: verdict
+  heading: "コンポーネントは、2種類ある"
+  sides:
+  - badge: "既定"
+    head: "サーバーコンポーネント"
+    desc: "サーバーで実行され、\n結果のHTMLだけがブラウザに届く。\nコードは一切送られない。"
+    at: 1
+  - badge: "宣言する"
+    tone: "ok"
+    head: "クライアントコンポーネント"
+    desc: "コードがブラウザに送られ、\nブラウザで実行される。\nuseState が使える。"
+    at: 2
+  narration: |
+    何も書かなければ、コンポーネントはサーバーで動きます。
+    実行された結果のHTMLだけがブラウザに届き、コードは送られません。
+    もう一方が、クライアントコンポーネント。
+    コードごとブラウザに送られて、ブラウザの中で実行されます。
+    ユーズ・ステートが使えるのは、こちらだけです。
+
+- kind: punch
+  text: "合言葉は、\n「利用者の操作に反応するか？」"
+  em: ["利用者の操作に反応するか？"]
+  sub: "反応するならクライアント。しないなら、サーバーのままでいい。"
+  narration: |
+    どちらにするか。合言葉はこれです。
+    利用者の操作に、反応するか。
+    反応するならクライアント。しないなら、サーバーのままにします。
+
+- kind: table
+  heading: "迷ったら、この表に当てる"
+  head: ["やりたいこと", "どちら"]
+  rows:
+  - ["データベースから直接データを取る", "*サーバー"]
+  - ["APIキーなど、秘密を使う", "*サーバー"]
+  - ["ボタンを押したら表示が変わる", "*クライアント"]
+  - ["入力欄に文字を打つ", "*クライアント"]
+  - ["ただ表示するだけ", "~サーバーのままでいい"]
+  narration: |
+    データベースを直接触るなら、サーバー。秘密を使うなら、サーバー。
+    押したら表示が変わるなら、クライアント。文字を打つなら、クライアント。
+    ただ表示するだけなら、サーバーのままでいい。
+
+- kind: code
+  heading: "クライアントにしたいときは、1行目に書く"
+  caption: "components/IngredientForm.tsx"
+  code: |
+    "use client";
+
+    import { useState } from "react";
+
+    export default function IngredientForm() { ... }
+  reveal: false
+  narration: |
+    クライアントにしたいときは、1行目に、ユーズ・クライアントと書きます。
+    書くのはこの1行だけです。
+    my-recipeでは、食材の入力フォームがこれにあたります。
+
+- kind: callout
+  tone: "danger"
+  title: "初心者が、最もよく出すエラー"
+  text: |
+    You're importing a component that needs useState.
+    This React hook only works in a client component.
+  narration: |
+    ユーズ・ステートを使っているのに、この1行を忘れると、こう怒られます。
+    これはクライアントコンポーネントでしか動きません、と。
+    ユーズ・ステートのエラーが出たら、1行目にユーズ・クライアント。そう覚えてください。
+
+- kind: demo
+  frames_dir: "demo/list"
+  narration: |
+    実際の画面で見ます。URLが、スラッシュ・フェイバリッツに変わりました。
+    並んでいるカードは、サーバーが作って送ってきたものです。
+    押すと開くこの部分だけが、ブラウザで動いています。
+    最後にジャンルで絞り込み。URLが変わりました。
+
+- kind: table
+  heading: "my-recipe の内訳"
+  head: ["ファイル", "種別", "理由"]
+  rows:
+  - ["app/layout.tsx", "~サーバー", "~表示するだけ"]
+  - ["app/page.tsx", "*クライアント", "入力と結果を切り替える"]
+  - ["app/favorites/page.tsx", "~サーバー", "~取ってきて並べるだけ"]
+  - ["IngredientForm", "*クライアント", "入力の state"]
+  - ["FavoriteCard", "*クライアント", "開閉の state"]
+  - ["GenreFilter", "~サーバー", "~リンクを並べるだけ"]
+  narration: |
+    いまの画面を、ファイル単位で分けるとこうなります。
+    トップページは、入力と結果を切り替えるのでクライアント。
+    お気に入りページは、取ってきて並べるだけなのでサーバー。
+    入力フォームと、開け閉めするカードが、クライアント。
+    そして一番下。ジャンルで絞り込むこれが、サーバーのままです。
+
+- kind: punch
+  text: "stateにできることを、\nあえてURLでやる。"
+  em: ["あえてURLでやる"]
+  sub: "選ばれたジャンルを、/favorites?genre=和食 というURLで表現している。"
+  narration: |
+    絞り込みという、いかにも操作らしい機能なのに、です。
+    種を明かすと、選ばれているジャンルを、stateではなくURLで表しています。
+    やっているのは、そのURLへのリンクを踏むことだけ。だからサーバーのままで済みます。
+
+- kind: cards
+  heading: "URLで持つと、おまけが付いてくる"
+  cards:
+  - label: "1"
+    title: "共有できる"
+    text: "絞り込んだ状態のURLを、\nそのまま人に渡せる。"
+  - label: "2"
+    title: "戻るボタンが効く"
+    text: "ブラウザの履歴に残るので、\n何もしなくても戻れる。"
+  - label: "3"
+    title: "コードが要らない"
+    text: "クライアント側に、\n書くものが無い。"
+  narration: |
+    しかも、おまけが付いてきます。
+    絞り込んだ状態のURLを、そのまま人に渡せる。戻るボタンも、何もしなくても効く。
+    そのうえ、クライアント側に書くコードが無い。設計の妙だと思います。
+
+- kind: code
+  heading: "サーバーコンポーネントの強み"
+  caption: "app/favorites/page.tsx"
+  code: |
+    export default async function FavoritesPage() {
+      const supabase = createClient();
+      const { data } = await supabase.from("favorite_recipes").select("*");
+
+      return <FavoriteList favorites={data ?? []} />;
+    }
+  reveal: false
+  narration: |
+    そのお気に入りページです。注目してほしいのは2つ。
+    エイシンクが付いていて、そのままアウェイトで待てること。
+    そして、データベースを直接触っていること。APIを経由する必要がありません。
+
+- kind: punch
+  text: "このコードは、ブラウザに\n1行も送られない。"
+  em: ["1行も送られない"]
+  sub: "だから、データベースの接続情報も漏れません。"
+  narration: |
+    しかもこのコードは、ブラウザに1行も送られません。
+    だから、データベースの接続情報も漏れない。
+    同じことをクライアント側でやると、何倍も面倒になります。
+
+- kind: diagram
+  heading: "混ぜるときは、外側をサーバー、内側だけクライアント"
+  nodes:
+  - { t: node, title: "FavoritesPage", sub: "サーバー：データベースから取ってくる" }
+  - { t: arrow, label: "配列を渡す" }
+  - { t: node, title: "FavoriteList", sub: "サーバー：受け取った配列を並べる" }
+  - { t: arrow, label: "1件ずつ渡す" }
+  - { t: node, title: "FavoriteCard", sub: "クライアント：開閉と、削除ボタン", tone: "accent" }
+  narration: |
+    ただし、サーバーコンポーネントでは、ユーズ・ステートもオン・クリックも使えません。
+    だから、混ぜるときはこうします。外側をサーバー、内側の操作する部分だけクライアント。
+    取ってきて、並べるところまではサーバー。
+    開け閉めと削除ボタンを持つ、一番内側のカードだけがクライアントです。
+
+# ---------------------------------------------------------- 問い③
+
+- kind: agenda
+  heading: "最後の問い"
+  items:
+  - { text: "どのファイルが、どのURLになる？", state: "done", at: 0 }
+  - { text: "そのコードは、どこで動いている？", state: "done", at: 0 }
+  - { text: "サーバー側の処理は、どう書く？", state: "now", at: 0 }
+  reveal: false
+  narration: |
+    最後の問いです。サーバー側の処理は、どう書くのか。
+
+- kind: punch
+  text: "書き方は、2つあります。"
+  sub: "自分のAPIを作る方法と、サーバーの関数をそのまま呼ぶ方法。"
+  narration: |
+    書き方は2つあります。
+    自分でAPIを作る方法と、サーバーにある関数をそのまま呼ぶ方法です。
+
+- kind: code
+  heading: "1つめ。Route Handler ― 自分のAPIを作る"
+  caption: "app/api/generate-recipe/route.ts"
+  code: |
+    export async function POST(request: Request) {
+      const body = await request.json();      // 送られてきたJSONを読む
+      // ...APIキーを使って、AIを呼ぶ...
+      return NextResponse.json({ recipe });   // JSONを返す
+    }
+  reveal: false
+  narration: |
+    1つめ、ルート・ハンドラーです。
+    エーピーアイというフォルダの下に、ルート・ティー・エスを置くと、そのURLがAPIになります。
+    送られてきたJSONを読んで、処理をして、JSONを返す。それだけです。
+
+- kind: punch
+  text: "関数名が、そのまま\nHTTPメソッドになる。"
+  em: ["そのままHTTPメソッドになる"]
+  sub: "POST という名前でexportすれば、POSTリクエストを受ける窓口になる。"
+  narration: |
+    面白いのは、関数の名前です。
+    ポストという名前で書き出せば、ポストのリクエストを受ける窓口になります。
+    ここは完全にサーバー側なので、APIキーを安全に使えます。
+    エラーは、第1章でやった400番台や500番台を、自分で選んで返せます。
+
+- kind: code
+  heading: "2つめ。Server Actions ― サーバーの関数を直接呼ぶ"
+  caption: "app/actions.ts"
+  code: |
+    "use server";
+
+    export async function addFavorite(recipe, sourceIngredients, genre) {
+      const supabase = createClient();
+      await supabase.from("favorite_recipes").insert({ ... });
+      revalidatePath("/favorites");
+    }
+  reveal: false
+  narration: |
+    2つめが、サーバー・アクションズです。
+    1行目に書いたユーズ・サーバーが、このファイルはサーバーで動く、という宣言です。
+    中身は、データベースに1行足しているだけ。普通の関数に見えます。
+
+- kind: punch
+  text: "呼ぶ側は、普通の関数を\n呼んでいるようにしか見えない。"
+  em: ["普通の関数"]
+  sub: "でも実際は、裏でブラウザからサーバーへリクエストが飛んでいる。"
+  narration: |
+    呼ぶ側も、その関数を普通に呼ぶだけです。アドレスも、フェッチも要りません。
+    でも実際には、裏でブラウザからサーバーへ、リクエストが飛んでいます。
+    その通信を、Next.jsが隠してくれているわけです。
+
+- kind: verdict
+  heading: "my-recipe が、両方を使っている理由"
+  sides:
+  - badge: "Route Handler"
+    head: "レシピ生成"
+    desc: "外部のAIを呼ぶ。\n400と500を、きちんと返し分けたい。"
+    at: 1
+  - badge: "Server Actions"
+    tone: "ok"
+    head: "お気に入りの登録・削除"
+    desc: "データベースに1行、足す・消すだけ。\n一覧の更新まで任せられる。"
+    at: 2
+  narration: |
+    my-recipeは、両方を使っています。理由はこうです。
+    レシピ生成は、外部のAIを呼ぶ処理。エラーの種類も返し分けたい。だからルート・ハンドラー。
+    お気に入りの登録と削除は、1行足す、消すだけ。だからサーバー・アクションズ。
+
+- kind: punch
+  text: "迷ったら、Server Actions\nで始めていい。"
+  sub: "画面のデータを書き換える操作ならこちら。外部サービスを呼ぶならRoute Handler。"
+  narration: |
+    実用的な判断はこうです。
+    画面のデータを書き換える操作なら、サーバー・アクションズ。
+    外部サービスを呼ぶなら、ルート・ハンドラー。
+
+- kind: split
+  icon: "server"
+  heading: "revalidatePath ― 前の章の宿題の答え"
+  big: "「あの画面、作り直して」"
+  small: "削除ボタンを押したあと、自分で画面を書き換えなくていい。\nサーバーが新しい一覧を作って、送り直してくれる。"
+  narration: |
+    さっきのコードの最後に、リバリデート・パスという1行がありました。
+    お気に入りの画面は古くなったから、作り直して、という指示です。
+    これがあるおかげで、削除したあとに、自分で画面を書き換える必要がありません。
+    前の章の最後に出した問いの、答えがこれです。
+
+# ============================================================ 秘密の置き場所
+
+- kind: section
+  num: "最後に"
+  heading: "秘密は、どこに置くのか"
+  narration: |
+    最後に、この章でどうしても伝えたいことを1つ。秘密の置き場所です。
+
+- kind: punch
+  text: "コードに直接書くと、Gitに残る。"
+  ng: ["Gitに残る"]
+  sub: "そのままGitHubに上げれば、世界中から読めます。"
+  narration: |
+    APIキーを、コードに直接書いてはいけません。
+    一度書くと、Gitの履歴に残ります。
+    そのままGitHubに上げれば、世界中の誰からでも読めます。
+
+- kind: code
+  heading: "置き場所は .env.local"
+  caption: ".env.local"
+  code: |
+    NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xxxxx
+    ANTHROPIC_API_KEY=sk-ant-xxxxx
+  reveal: false
+  narration: |
+    代わりに、プロジェクトの直下に、ドット・イー・エヌ・ブイ・ドット・ローカル
+    というファイルを作って、そこに書きます。
+    これはギットイグノアに入れて、Gitに含めません。
+    含まれないということは、公開先にも届きません。
+    Vercelに上げるときは、管理画面で同じ値を登録します。18章でやります。
+
+- kind: verdict
+  heading: "名前の付け方で、読める場所が変わる"
+  sides:
+  - badge: "○"
+    tone: "ok"
+    head: "ANTHROPIC_API_KEY"
+    desc: "サーバーだけが読める。\nブラウザには届かない。"
+    at: 1
+  - badge: "✕"
+    tone: "ng"
+    head: "NEXT_PUBLIC_ が付くと"
+    desc: "ブラウザにも埋め込まれる。\n誰でも見られる。"
+    at: 2
+  narration: |
+    ここが、この章で一番大事なところです。
+    同じファイルに書いても、名前の付け方で、読める場所が変わります。
+    そのままの名前なら、サーバーだけが読めます。
+    頭にネクスト・アンダーバー・パブリック・アンダーバーと付けると、ブラウザにも埋め込まれます。
+    Supabaseの鍵にこれが付いているのは、公開される前提で設計された鍵だからです。
+    本当の守りは、データベース側のルールで行います。14章で扱います。
+
+- kind: callout
+  tone: "danger"
+  title: "この章の、たった1つのルール"
+  text: |
+    秘密にしたいものに、NEXT_PUBLIC_ を付けない。
+  narration: |
+    もしAPIキーに、ネクスト・アンダーバー・パブリック・アンダーバーと付けたら、
+    その瞬間、キーが全世界に公開されます。
+    詳細設計書が、命名を誤らないよう特に注意する、と書いているのはこれのことです。
+
+- kind: punch
+  text: "第1章の「秘密はサーバーに置く」は、\nNext.jsでは名前の付け方になる。"
+  em: ["名前の付け方"]
+  sub: "最初に見た「考案中」の数秒。APIキーが出てくるのは、あの裏側だけです。"
+  narration: |
+    第1章で、秘密はサーバーに置く、という話をしました。
+    Next.jsでそれを実行すると、名前の付け方の問題になります。
+    冒頭で見た、考案中、と出ていたあの数秒。ブラウザが送ったのは食材の名前だけです。
+    APIキーが出てくるのは、ルート・ハンドラーの中、つまりサーバーの中だけでした。
+
+- kind: cards
+  heading: "この教材で、もう2つ出てくる書き方"
+  cards:
+  - label: "1行"
+    title: "force-dynamic"
+    text: "「毎回、作り直して」の指示。\n無いと、お気に入りを足しても\n一覧が古いままになる。"
+  - label: "受け取る"
+    title: "searchParams"
+    text: "URLの ?genre=和食 を読む。\nNext.js 15 から、await が必要。"
+  narration: |
+    細かい書き方を2つだけ。
+    フォース・ダイナミックは、毎回作り直して、という指示です。
+    無いと、お気に入りを足したのに一覧が古いまま、ということが起きます。
+    サーチ・パラムスは、URLの後ろに付いたジャンルを読む仕組みで、
+    15からアウェイトが必要になりました。
+    Next.jsは変化が大きいので、記事の日付は必ず見てください。
+
+# ============================================================ まとめ
+
+- kind: agenda
+  heading: "3つの問いの、答え"
+  items:
+  - { text: "フォルダがURLになる。page.tsx が画面、route.ts がAPI", state: "done", at: 1 }
+  - { text: "既定はサーバー。操作するものだけ \"use client\"", state: "done", at: 2 }
+  - { text: "外部APIは Route Handler、データ更新は Server Actions", state: "done", at: 3 }
+  narration: |
+    まとめです。
+    フォルダが、そのままURLになる。ページが画面で、ルートがAPI。
+    コンポーネントは既定でサーバー。操作するものだけ、ユーズ・クライアント。
+    外部サービスを呼ぶならルート・ハンドラー、データを更新するならサーバー・アクションズ。
+
+- kind: punch
+  text: "そのコードは、どこで動くのか。"
+  em: ["どこで動くのか"]
+  sub: "Next.jsを書いているあいだ、ずっとこれを考えることになります。"
+  narration: |
+    この章から1つだけ持ち帰るなら、これです。
+    そのコードは、どこで動くのか。
+    Next.jsを書いているあいだ、ずっとこれを考えることになります。
+
+- kind: punch
+  text: "文法の話は、ここまでです。"
+  sub: "Part 1 が終わりました。道具は、ひととおりそろいました。"
+  narration: |
+    そして、これでPart 1は終わりです。
+    HTML、CSS、JavaScript、TypeScript、React、Next.js。
+    道具は、ひととおりそろいました。
+
+- kind: title
+  kicker: "次回 第8章"
+  heading: "設計する"
+  sub: "そもそも、何をどう決めるのか"
+  narration: |
+    次回は、そもそも何をどう決めるのか、という設計の話です。
+    手を動かして作り始めるのは、その次から。
+    ご視聴ありがとうございました。
