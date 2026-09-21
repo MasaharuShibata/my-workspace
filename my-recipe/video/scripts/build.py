@@ -537,8 +537,15 @@ def render_slide(meta, s, idx, total):
   var b = document.querySelector(".body");
   if (b && b.children.length) {
     var kids = Array.prototype.slice.call(b.children);
-    var top = Math.min.apply(null, kids.map(function (e) { return e.getBoundingClientRect().top; }));
-    var bottom = Math.max.apply(null, kids.map(function (e) { return e.getBoundingClientRect().bottom; }));
+    var rects = kids.map(function (e) { return e.getBoundingClientRect(); });
+    var top = Math.min.apply(null, rects.map(function (r) { return r.top; }));
+    /* overflow:hidden の要素(コードブロック等)は flex に潰されるため、
+       rect の高さが実寸にならない。中身の高さ(scrollHeight)のほうが
+       大きければそちらを採る。そうしないと「収まっている」と誤判定して
+       下端が切れたまま撮ってしまう。 */
+    var bottom = Math.max.apply(null, kids.map(function (e, i) {
+      return rects[i].top + Math.max(rects[i].height, e.scrollHeight);
+    }));
     var need = bottom - top;
     var avail = b.getBoundingClientRect().height;
     if (need > avail && avail > 0) {

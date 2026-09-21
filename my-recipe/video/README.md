@@ -33,7 +33,8 @@ pip install pyyaml edge-tts
 npm install ffmpeg-static playwright-core
 ```
 
-Chromium は次の順で探します。見つからない場合は `CHROME_PATH` で指定してください。
+Chromium は次の順で探します（`build.py` と `capture-demo.mjs` で共通）。
+見つからない場合は `CHROME_PATH` で指定してください。
 描画は Playwright 経由で行うため、ビューポートは常に1920×1080ちょうどになります。
 
 1. 環境変数 `CHROME_PATH`

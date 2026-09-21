@@ -62,7 +62,7 @@ push しておけば、次のセッションが動画生成から再開できる
 | 07 | Next.js | list,thinking | 未着手 | 画面遷移とサーバー側の処理 |
 | 08 | 設計する | input,result,list | 未着手 | 何を作ると決めたかを実物で示す |
 | 09 | Step1 プロジェクトを作る | input | 未着手 | |
-| 10 | Step2 動かない画面を作る | input,result | 未着手 | 見た目だけの話 |
+| 10 | Step2 動かない画面を作る | input,result | 完了 | 13分55秒 / 納品済 |
 | 11 | Step3 フォームを動かす | validation,input | 未着手 | validationが主役 |
 | 12 | Step4 サーバー側の処理 | thinking,result | 未着手 | まだ偽レシピの段階 |
 | 13 | Step5 Claude APIに繋ぐ | thinking,result,regenerate | 未着手 | |
