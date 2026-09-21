@@ -16,12 +16,34 @@
 // 外部サービスを呼ぶ層だけスタブに差し替わっている。詳しくは video/README.md。
 
 import { chromium } from "playwright-core";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
+
+// Chromium を探す。build.py の find_chrome() と同じ順で見る。
+// playwright-core 任せにすると、同梱版とは別バージョンの Chromium しか
+// 置いていない環境で「Executable doesn't exist」で落ちる。
+function findChrome() {
+  if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) {
+    return process.env.CHROME_PATH;
+  }
+  const root = process.env.PLAYWRIGHT_BROWSERS_PATH || "/opt/pw-browsers";
+  const stack = existsSync(root) ? [root] : [];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (name === "chrome" && dir.includes("chromium") && !dir.includes("headless")) return p;
+      try {
+        if (statSync(p).isDirectory()) stack.push(p);
+      } catch { /* シンボリックリンク切れなどは飛ばす */ }
+    }
+  }
+  return undefined;   // playwright-core の既定に任せる
+}
 
 const argv = process.argv.slice(2);
 const positional = argv.filter((a) => !a.startsWith("--"));
@@ -163,7 +185,7 @@ mkdirSync(OUT, { recursive: true });
 writeFileSync(SHELL, shellHtml);
 
 const browser = await chromium.launch({
-  executablePath: process.env.CHROME_PATH || undefined,
+  executablePath: findChrome(),
   args: ["--no-sandbox", "--disable-gpu", "--font-render-hinting=none"],
 });
 const page = await browser.newPage({
@@ -253,13 +275,28 @@ async function endScene() {
 }
 
 // シーン1つぶんを包む。撮る/撮らないに関わらず中の操作は必ず走る。
-async function scene(name, cap, body) {
+// before は録画を始める前に走る下ごしらえ。前のシーンが残した画面の状態
+// (入力チェックのエラー表示など)を持ち越さないために使う。
+async function scene(name, cap, body, before) {
   const recording = !only.length || only.includes(name);
   console.log(`撮影: ${name}${recording ? "" : " (操作のみ)"}`);
+  if (before) await before();
   if (cap && recording) await caption(String(++capNo), cap[0], cap[1]);
   startScene(name);
   await body();
   await endScene();
+}
+
+// アプリを読み込み直して、画面をまっさらに戻す。
+// iframe は別オリジンなので中から reload() は呼べない。枠側から src を入れ直す。
+async function reloadApp() {
+  await page.evaluate(() => {
+    const f = document.getElementById("app");
+    f.src = f.src;
+  });
+  await app.locator(".ingredient-form input").waitFor({ timeout: 30000 });
+  await applyZoom();
+  await wait(400);
 }
 
 // ---------------------------------------------------------------- シーン
@@ -282,6 +319,7 @@ const SCENES = [
   }],
 
   // 食材を入力してジャンルを選ぶ
+  // 直前の validation で出たエラーが残ったまま映らないよう、撮る前に読み込み直す
   ["input", ["食材を入力する", "ここはまだ、あなたのパソコンの中だけの話"], async () => {
     const box = app.locator("#ingredients");
     await box.click();
@@ -294,7 +332,7 @@ const SCENES = [
     await wait(1600);
     await tapAt(app.locator(".ingredient-form button[type=submit]"));
     await wait(1600);
-  }],
+  }, reloadApp],
 
   // 考案中。画面はほぼ静止する
   ["thinking", ["サーバーがAIに問い合わせる", "APIキーが使われるのは、この裏側だけ"], async () => {
@@ -388,8 +426,8 @@ await applyZoom();
 await setPath("/");
 await wait(500);
 
-for (const [name, cap, body] of SCENES) {
-  await scene(name, cap, body);
+for (const [name, cap, body, before] of SCENES) {
+  await scene(name, cap, body, before);
 }
 
 await browser.close();
